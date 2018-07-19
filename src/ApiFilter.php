@@ -45,7 +45,19 @@ class ApiFilter
      *
      * @example
      * With Symfony
-     * $filters = $apiFilter->parseFilters($request->query->all())
+     * $queryParameters = $request->query->all();   // ['field' => 'value']
+     * $filters = $apiFilter->parseFilters($queryParameters)
+     *
+     * // [
+     * //     0 => Lmc\ApiFilter\Filter\FilterWithOperator {
+     * //         private $title    => 'eq'
+     * //         private $operator => '='
+     * //         private $column   => 'field'
+     * //         private $value    => Lmc\ApiFilter\Entity\Value {
+     * //             private $value = 'value'
+     * //         }
+     * //     }
+     * // ]
      */
     public function parseFilters(array $queryParameters): FiltersInterface
     {
@@ -60,8 +72,14 @@ class ApiFilter
      * First Applicator (from the highest priority), which can be applied is applied and no others
      * @see ApplicatorInterface
      *
-     * You can register you own Applicators
+     * You can register your own Applicators
      * @see ApiFilter::registerApplicator()
+     *
+     * @example
+     * $sql = 'SELECT * FROM table';
+     * [$firstFilter] = $apiFilter->parseFilters(['title' => 'foo']);      // Filter('title', 'foo', '=')
+     * $sqlWithFilter = $apiFilter->applyFilter($firstFilters, $sql);      // SELECT * FROM table WHERE title = :title_eq
+     * $preparedValue = $apiFilter->getPreparedValue($firstFilters, $sql); // ['title_eq' => 'foo']
      *
      * @param mixed $filterable
      * @return mixed
@@ -72,6 +90,25 @@ class ApiFilter
     }
 
     /**
+     * Prepared value for applied filter
+     *
+     * Note: Both Filter and Filterable must be the same as was for apply method
+     * @see ApiFilter::applyFilter()
+     *
+     * @example
+     * $sql = 'SELECT * FROM table';
+     * [$firstFilter] = $apiFilter->parseFilters(['title' => 'foo']);      // Filter('title', 'foo', '=')
+     * $sqlWithFilter = $apiFilter->applyFilter($firstFilters, $sql);      // SELECT * FROM table WHERE title = :title_eq
+     * $preparedValue = $apiFilter->getPreparedValue($firstFilters, $sql); // ['title_eq' => 'foo']
+     *
+     * @param mixed $filterable
+     */
+    public function getPreparedValue(FilterInterface $filter, $filterable): array
+    {
+        return $this->applicator->getPreparedValue($filter, new Filterable($filterable));
+    }
+
+    /**
      * Apply all Filters to given filterable and returns the result of the same type as given filterable
      * or whatever the Applicator returns
      *
@@ -79,8 +116,14 @@ class ApiFilter
      * First Applicator (from the highest priority), which can be applied is applied and no others
      * @see ApplicatorInterface
      *
-     * You can register you own Applicators
+     * You can register your own Applicators
      * @see ApiFilter::registerApplicator()
+     *
+     * @example
+     * $sql = 'SELECT * FROM table';
+     * $filters = $apiFilter->parseFilters(['title' => 'foo']);         // [Filter('title', 'foo', '=')]
+     * $sqlWithFilters = $apiFilter->applyFilters($filters, $sql);      // SELECT * FROM table WHERE title = :title_eq
+     * $preparedValues = $apiFilter->getPreparedValues($filters, $sql); // ['title_eq' => 'foo']
      *
      * @param mixed $filterable
      * @return mixed
@@ -88,6 +131,25 @@ class ApiFilter
     public function applyFilters(FiltersInterface $filters, $filterable)
     {
         return $this->applicator->applyAll($filters, new Filterable($filterable))->getValue();
+    }
+
+    /**
+     * Prepared values for applied filters
+     *
+     * Note: Both Filters and Filterable must be the same as was for apply method
+     * @see ApiFilter::applyFilters()
+     *
+     * @example
+     * $sql = 'SELECT * FROM table';
+     * $filters = $apiFilter->parseFilters(['title' => 'foo']);         // [Filter('title', 'foo', '=')]
+     * $sqlWithFilters = $apiFilter->applyFilters($filters, $sql);      // SELECT * FROM table WHERE title = :title_eq
+     * $preparedValues = $apiFilter->getPreparedValues($filters, $sql); // ['title_eq' => 'foo']
+     *
+     * @param mixed $filterable
+     */
+    public function getPreparedValues(FiltersInterface $filters, $filterable): array
+    {
+        return $this->applicator->getPreparedValues($filters, new Filterable($filterable));
     }
 
     /**

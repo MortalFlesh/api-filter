@@ -31,10 +31,11 @@ $apiFilter->registerApplicator(...);  // optional, when you want to use non-stan
 $apiFilter->registerEscape(...);      // optional, when you want to use non-standard implementation
 
 // in service/controller/...
-$filters = $apiFiter->parseFilters($request->query->all());
+$filters = $apiFilter->parseFilters($request->query->all());
 
 // [
 //     0 => Lmc\ApiFilter\Filter\FilterWithOperator {
+//         private $title    => 'eq'
 //         private $operator => '='
 //         private $column   => 'field'
 //         private $value    => Lmc\ApiFilter\Entity\Value {
@@ -48,55 +49,59 @@ $filters = $apiFiter->parseFilters($request->query->all());
 ```php
 // in Model/EntityRepository
 $sql = 'SELECT * FROM table';
-$sql = $apiFilter->applyFilters($filters, $sql);    // "SELECT * FROM table WHERE 1 AND field = 'value'"
+$sql = $apiFilter->applyFilters($filters, $sql); // "SELECT * FROM table WHERE 1 AND field = :field_eq"
 
 // or one by one
 foreach ($filters as $filter) {
     $sql = $apiFilter->applyFilter($filter, $sql);
 }
+
+// get prepared values for applied filters
+$preparedValues = $apiFilter->getPreparedValues($filters, $sql);    // ['field_eq' => 'value']
+
+// execute query
+$stmt = $connection->prepare($sql);
+$stmt->execute($preparedValues);
 ```
 
-### With `Doctrine Applicator`
-- requires `doctrine/orm` installed
-_not implemented yet_
+#### Shorter example (_same as ☝_)
 ```php
 // in EntityRepository/Model
-$apiFilter->applyAll($filters, $queryBuilder)
+$sql = 'SELECT * FROM table';
+$stmt = $connection->prepare($apiFilter->applyAll($filters, $sql)); // SELECT * FROM table WHERE 1 AND field = :field_eq 
+$stmt->execute($apiFilter->getPreparedValues($filters, $sql));      // ['field_eq' => 'value']
+```
+
+### With `Doctrine Query Builder Applicator`
+- requires `doctrine/orm` installed
+- applying filters uses **cloned** `QueryBuilder` -> original `QueryBuilder` is **untouched**
+```php
+// in EntityRepository/Model
+$queryBuilder = $this->createQueryBuilder('alias');
+$queryBuilder = $apiFilter->applyAll($filters, $queryBuilder);
 
 // or one by one
 foreach ($filters as $filter) {
     $queryBuilder = $apiFilter->applyFilter($filter, $queryBuilder);
 }
+
+// get prepared values for applied filters
+$preparedValues = $apiFilter->getPreparedValues($filters, $queryBuilder);   // ['field_eq' => 'value']
+
+// get query
+$queryBuilder
+    ->setParameters($preparedValues)
+    ->getQuery();
 ```
 
-### Example
-```http request
-GET http://host/person/?type[in][]=student&type[in][]=admin&name=Tom
-```
-
+#### Shorter example (_same as ☝_)
 ```php
-$parameters = $request->query->all();
-// [
-//     "type" => [
-//         "in" => [
-//             0 => "student"
-//             1 => "admin"
-//         ]
-//     ],
-//     "name" => "Tom"
-// ]
-
-$filters = $apiFiter->parseFilters($parameters);
-$sql = 'SELECT * FROM person';
-
-foreach ($filters as $filter) {
-    $sql = $apiFilter->applyFilter($filter, $sql);
-    
-    // 0. SELECT * FROM person WHERE 1 AND type IN ('student', 'admin') 
-    // 1. SELECT * FROM person WHERE 1 AND type IN ('student', 'admin') AND name = 'Tom' 
-}
+// in EntityRepository/Model
+$apiFilter
+    ->applyAll($filters, $this->createQueryBuilder('alias'))                // query builder with applied filters
+    ->setParameters($apiFilter->getPreparedValues($filters, $queryBuilder)) // ['field_eq' => 'value']
+    ->getQuery();
 ```
-
 
 ## Supported filters
 
@@ -134,6 +139,37 @@ GET http://host/endpoint/?type[in][]=one&type[in][]=two
 _☝ is not implemented yet_
 
 
+## Examples
+```http request
+GET http://host/person/?type[in][]=student&type[in][]=admin&name=Tom
+```
+
+```php
+$parameters = $request->query->all();
+// [
+//     "type" => [
+//         "in" => [
+//             0 => "student"
+//             1 => "admin"
+//         ]
+//     ],
+//     "name" => "Tom"
+// ]
+
+$filters = $apiFilter->parseFilters($parameters);
+$sql = 'SELECT * FROM person';
+
+foreach ($filters as $filter) {
+    $sql = $apiFilter->applyFilter($filter, $sql);
+    
+    // 0. SELECT * FROM person WHERE 1 AND type IN ('student', 'admin') 
+    // 1. SELECT * FROM person WHERE 1 AND type IN ('student', 'admin') AND name = :name_eq 
+}
+
+$preparedValues = $apiFilter->getPreparedValues($filters, $sql);    // ['name_eq' => 'Tom']
+```
+
+
 ## Development
 
 ### Install
@@ -147,13 +183,7 @@ composer all
 ```
 
 ## Todo
-- add prepared statements into `SqlApplicator`
-    ```php
-    $sql = $apiFilter->applyFilters($filters, $sql);
-    $stmt = $connection->prepare($sql);
-    $stmt->execute($filters->getPreparedValues());
-    ```
-    - either remove escapes or rename them to escapers
+- remove escapes
 - allow Tuples in values
     - request with Tuple
     ```http request
@@ -161,16 +191,6 @@ composer all
     ```
 - add filters:
     - `in`
-- add applicator:
-    - `Doctrine\QueryBuilder`
-        - prepared:
-        ```php
-        $queryBuilder = $apiFilter->applyFilters($filters, queryBuilder);
-        $queryBuilder->setParameters($filters->getPreparedValues());
-        ```
-    - for "special" applicators:
-        - if class exists
-        - suggest in composer
 - defineAllowed: (_this should be on DI level_)
     - Fields (columns)
     - Filters

@@ -7,7 +7,7 @@ use Lmc\ApiFilter\Entity\Filterable;
 use Lmc\ApiFilter\Escape\EscapeInterface;
 use Lmc\ApiFilter\Filter\FilterInterface;
 
-class DoctrineQueryBuilderApplicator implements ApplicatorInterface
+class DoctrineQueryBuilderApplicator extends AbstractApplicator
 {
     public function supports(Filterable $filterable): bool
     {
@@ -23,7 +23,19 @@ class DoctrineQueryBuilderApplicator implements ApplicatorInterface
      */
     public function applyTo(FilterInterface $filter, Filterable $filterable): Filterable
     {
-        throw new \Exception(sprintf('Method %s is not implemented yet.', __METHOD__));
+        /** @var QueryBuilder $queryBuilder */
+        $queryBuilder = clone $filterable->getValue();
+        [$alias] = $queryBuilder->getAllAliases();
+
+        $expr = sprintf(
+            '%s.%s %s :%s',
+            $alias,
+            $filter->getColumn(),
+            $filter->getOperator(),
+            $this->getColumnPlaceholder($filter)
+        );
+
+        return new Filterable($queryBuilder->andWhere($expr));
     }
 
     public function setEscape(EscapeInterface $escape): void

@@ -6,7 +6,9 @@ use Lmc\ApiFilter\Applicator\ApplicatorInterface;
 use Lmc\ApiFilter\Entity\Filterable;
 use Lmc\ApiFilter\Filter\FilterInterface;
 use MF\Collection\Immutable\Generic\IList;
+use MF\Collection\Immutable\Generic\IMap;
 use MF\Collection\Immutable\Generic\ListCollection;
+use MF\Collection\Immutable\Generic\Map;
 
 class Filters implements FiltersInterface
 {
@@ -42,5 +44,17 @@ class Filters implements FiltersInterface
     public function getIterator(): iterable
     {
         yield from $this->filters;
+    }
+
+    public function getPreparedValues(ApplicatorInterface $applicator): array
+    {
+        return $this->filters
+            ->reduce(
+                function (IMap $preparedValues, FilterInterface $filter) use ($applicator) {
+                    return $preparedValues->set(...$applicator->getPreparedValue($filter));
+                },
+                new Map('string', 'any')
+            )
+            ->toArray();
     }
 }

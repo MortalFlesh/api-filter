@@ -26,14 +26,12 @@ class ApplicatorSql extends AbstractApplicator
             ? $filterable . ' WHERE 1'
             : $filterable;
 
-        $column = $filter->getColumn();
-
         $result = sprintf(
-            '%s AND %s %s %s',
+            '%s AND %s %s :%s',
             $sql,
-            $column,
+            $filter->getColumn(),
             $filter->getOperator(),
-            $this->escape($column, $filter->getValue())->getValue()
+            $this->getColumnPlaceholder($filter)
         );
 
         return new Filterable($result);

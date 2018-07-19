@@ -4,6 +4,9 @@ namespace Lmc\ApiFilter\Applicator;
 
 use Lmc\ApiFilter\Entity\Value;
 use Lmc\ApiFilter\Escape\EscapeInterface;
+use Lmc\ApiFilter\Filter\FilterInterface;
+use MF\Collection\Immutable\ITuple;
+use MF\Collection\Immutable\Tuple;
 
 abstract class AbstractApplicator implements ApplicatorInterface
 {
@@ -20,5 +23,15 @@ abstract class AbstractApplicator implements ApplicatorInterface
         return $this->escape && $this->escape->supports($column, $value)
             ? $this->escape->escape($column, $value)
             : $value;
+    }
+
+    public function getPreparedValue(FilterInterface $filter): ITuple
+    {
+        return Tuple::of($this->getColumnPlaceholder($filter), $filter->getValue()->getValue());
+    }
+
+    protected function getColumnPlaceholder(FilterInterface $filter): string
+    {
+        return sprintf('%s_%s', $filter->getColumn(), $filter->getTitle());
     }
 }

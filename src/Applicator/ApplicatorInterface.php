@@ -5,6 +5,7 @@ namespace Lmc\ApiFilter\Applicator;
 use Lmc\ApiFilter\Entity\Filterable;
 use Lmc\ApiFilter\Escape\EscapeInterface;
 use Lmc\ApiFilter\Filter\FilterInterface;
+use MF\Collection\Immutable\ITuple;
 
 interface ApplicatorInterface
 {
@@ -20,4 +21,6 @@ interface ApplicatorInterface
     public function applyTo(FilterInterface $filter, Filterable $filterable): Filterable;
 
     public function setEscape(EscapeInterface $escape): void;
+
+    public function getPreparedValue(FilterInterface $filter): ITuple;
 }

@@ -14,7 +14,7 @@
     },
     "require": {
         "php": "^7.1",
-        "mf/collections-php": "^3.5"
+        "mf/collections-php": "^3.7"
     },
     "suggest": {
         "doctrine/orm": "To allow applying filters directly to QueryBuilder"

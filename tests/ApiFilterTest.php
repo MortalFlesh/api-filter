@@ -3,15 +3,18 @@
 namespace Lmc\ApiFilter;
 
 use Doctrine\ORM\QueryBuilder;
-use Mockery as m;
 
 class ApiFilterTest extends AbstractTestCase
 {
     /** @var ApiFilter */
     private $apiFilter;
+    /** @var QueryBuilder */
+    private $queryBuilder;
 
     protected function setUp(): void
     {
+        $this->queryBuilder = $this->setUpQueryBuilder();
+
         $this->apiFilter = new ApiFilter();
     }
 
@@ -22,37 +25,44 @@ class ApiFilterTest extends AbstractTestCase
     public function shouldParseQueryParametersAndApplyThemToSimpleSql(
         array $queryParameters,
         string $sql,
-        string $expectedSql
+        string $expectedSql,
+        array $expectedPreparedValues
     ): void {
         $filters = $this->apiFilter->parseFilters($queryParameters);
         $sqlWithFilters = $this->apiFilter->applyFilters($filters, $sql);
+        $preparedValues = $this->apiFilter->getPreparedValues($filters, $sql);
 
         $this->assertSame($expectedSql, $sqlWithFilters);
+        $this->assertSame($expectedPreparedValues, $preparedValues);
     }
 
     public function provideQueryParametersForSql(): array
     {
         return [
-            // empty
+            // query parameters, sql, expected sql, expected prepared values
             'empty' => [
                 [],
                 'SELECT * FROM table',
                 'SELECT * FROM table',
+                [],
             ],
             'title=foo' => [
                 ['title' => 'foo'],
                 'SELECT * FROM table',
-                'SELECT * FROM table WHERE 1 AND title = \'foo\'',
+                'SELECT * FROM table WHERE 1 AND title = :title_eq',
+                ['title_eq' => 'foo'],
             ],
             'title[eq]=foobar' => [
                 ['title' => ['eq' => 'foo']],
                 'SELECT * FROM table',
-                'SELECT * FROM table WHERE 1 AND title = \'foo\'',
+                'SELECT * FROM table WHERE 1 AND title = :title_eq',
+                ['title_eq' => 'foo'],
             ],
             'title[eq]=foobar&value[gt]=10' => [
                 ['title' => ['eq' => 'foo'], 'value' => ['gt' => '10']],
                 'SELECT * FROM table',
-                'SELECT * FROM table WHERE 1 AND title = \'foo\' AND value > 10',
+                'SELECT * FROM table WHERE 1 AND title = :title_eq AND value > :value_gt',
+                ['title_eq' => 'foo', 'value_gt' => '10'],
             ],
         ];
     }
@@ -81,41 +91,48 @@ class ApiFilterTest extends AbstractTestCase
      */
     public function shouldParseQueryParametersAndApplyThemToQueryBuilder(
         array $queryParameters,
-        string $expectedSql
+        ?array $expectedDqlWhere,
+        array $expectedPreparedValues
     ): void {
-        $this->markTestIncomplete('Todo - finish with imlementing apply method');
-        $queryBuilder = m::mock(QueryBuilder::class);
-
         $filters = $this->apiFilter->parseFilters($queryParameters);
-        $queryBuilderWithFilters = $this->apiFilter->applyFilters($filters, $queryBuilder);
+
+        /** @var QueryBuilder $queryBuilderWithFilters */
+        $queryBuilderWithFilters = $this->apiFilter->applyFilters($filters, $this->queryBuilder);
+        $preparedValues = $this->apiFilter->getPreparedValues($filters, $this->queryBuilder);
+
+        if (!empty($queryParameters)) {
+            // application of filters should not change original query builder
+            $this->assertNotSame($this->queryBuilder, $queryBuilderWithFilters);
+        }
 
         $this->assertInstanceOf(QueryBuilder::class, $queryBuilderWithFilters);
-        //$this->assertSame($expectedSql, $queryBuilderWithFilters);
+        $this->assertDqlWhere($expectedDqlWhere, $queryBuilderWithFilters);
+        $this->assertSame($expectedPreparedValues, $preparedValues);
     }
 
     public function provideQueryParametersForQueryBuilder(): array
     {
         return [
-            // empty
+            // query parameters, expected dql where, expected prepared values
             'empty' => [
                 [],
-                'SELECT * FROM table',
-                'SELECT * FROM table',
+                null,
+                [],
             ],
             'title=foo' => [
                 ['title' => 'foo'],
-                'SELECT * FROM table',
-                'SELECT * FROM table WHERE 1 AND title = \'foo\'',
+                ['t.title = :title_eq'],
+                ['title_eq' => 'foo'],
             ],
             'title[eq]=foobar' => [
                 ['title' => ['eq' => 'foo']],
-                'SELECT * FROM table',
-                'SELECT * FROM table WHERE 1 AND title = \'foo\'',
+                ['t.title = :title_eq'],
+                ['title_eq' => 'foo'],
             ],
             'title[eq]=foobar&value[gt]=10' => [
                 ['title' => ['eq' => 'foo'], 'value' => ['gt' => '10']],
-                'SELECT * FROM table',
-                'SELECT * FROM table WHERE 1 AND title = \'foo\' AND value > 10',
+                ['t.title = :title_eq', 't.value > :value_gt'],
+                ['title_eq' => 'foo', 'value_gt' => '10'],
             ],
         ];
     }
@@ -126,18 +143,18 @@ class ApiFilterTest extends AbstractTestCase
      */
     public function shouldParseQueryParametersAndApplyThemOneByOneToQueryBuilder(
         array $queryParameters,
-        string $expectedSql
+        ?array $expectedDqlWhere,
+        array $expectedPreparedValues
     ): void {
-        $this->markTestIncomplete('Todo - finish with imlementing apply method');
-        $queryBuilder = m::mock(QueryBuilder::class);
-
         $filters = $this->apiFilter->parseFilters($queryParameters);
 
         foreach ($filters as $filter) {
-            $queryBuilder = $this->apiFilter->applyFilter($filter, $queryBuilder);
+            $this->queryBuilder = $this->apiFilter->applyFilter($filter, $this->queryBuilder);
         }
+        $preparedValues = $this->apiFilter->getPreparedValues($filters, $this->queryBuilder);
 
-        $this->assertInstanceOf(QueryBuilder::class, $queryBuilder);
-        //$this->assertSame($expectedSql, $sql);
+        $this->assertInstanceOf(QueryBuilder::class, $this->queryBuilder);
+        $this->assertDqlWhere($expectedDqlWhere, $this->queryBuilder);
+        $this->assertSame($expectedPreparedValues, $preparedValues);
     }
 }
