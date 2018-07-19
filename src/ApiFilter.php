@@ -3,8 +3,8 @@
 namespace Lmc\ApiFilter;
 
 use Lmc\ApiFilter\Applicator\ApplicatorInterface;
-use Lmc\ApiFilter\Applicator\ApplicatorSql;
 use Lmc\ApiFilter\Applicator\DoctrineQueryBuilderApplicator;
+use Lmc\ApiFilter\Applicator\SqlApplicator;
 use Lmc\ApiFilter\Constant\Priority;
 use Lmc\ApiFilter\Entity\Filterable;
 use Lmc\ApiFilter\Escape\EscapeInt;
@@ -34,7 +34,7 @@ class ApiFilter
         if (class_exists('Doctrine\ORM\QueryBuilder')) {
             $this->registerApplicator(new DoctrineQueryBuilderApplicator(), Priority::MEDIUM);
         }
-        $this->registerApplicator(new ApplicatorSql(), Priority::MEDIUM);
+        $this->registerApplicator(new SqlApplicator(), Priority::MEDIUM);
 
         $this->registerEscape(new EscapeInt(), Priority::MEDIUM);
         $this->registerEscape(new EscapeString(), Priority::LOW);

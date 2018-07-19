@@ -6,8 +6,8 @@ use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\QueryBuilder;
 use Lmc\ApiFilter\AbstractTestCase;
 use Lmc\ApiFilter\Applicator\ApplicatorInterface;
-use Lmc\ApiFilter\Applicator\ApplicatorSql;
 use Lmc\ApiFilter\Applicator\DoctrineQueryBuilderApplicator;
+use Lmc\ApiFilter\Applicator\SqlApplicator;
 use Lmc\ApiFilter\Entity\Filterable;
 use Lmc\ApiFilter\Entity\Value;
 use Lmc\ApiFilter\Filter\FilterInterface;
@@ -56,21 +56,21 @@ class FilterApplicatorTest extends AbstractTestCase
         return [
             // applicator, filter, filterable, expected, expected prepared values
             'sql - eq' => [
-                new ApplicatorSql(),
+                new SqlApplicator(),
                 new FilterWithOperator('col', new Value('val'), '=', 'eq'),
                 'SELECT * FROM table WHERE public = 1',
                 'SELECT * FROM table WHERE public = 1 AND col = :col_eq',
                 ['col_eq' => 'val'],
             ],
             'sql - gt' => [
-                new ApplicatorSql(),
+                new SqlApplicator(),
                 new FilterWithOperator('col', new Value('val'), '>', 'gt'),
                 'SELECT * FROM table WHERE public = 1',
                 'SELECT * FROM table WHERE public = 1 AND col > :col_gt',
                 ['col_gt' => 'val'],
             ],
             'sql - gte' => [
-                new ApplicatorSql(),
+                new SqlApplicator(),
                 new FilterWithOperator('col', new Value(10), '>=', 'gte'),
                 'SELECT * FROM table WHERE public = 1',
                 'SELECT * FROM table WHERE public = 1 AND col >= :col_gte',
@@ -130,7 +130,7 @@ class FilterApplicatorTest extends AbstractTestCase
         return [
             // applicator, filters, filterable, expected
             'sql - between' => [
-                new ApplicatorSql(),
+                new SqlApplicator(),
                 [
                     new FilterWithOperator('column', new Value('min'), '>', 'gt'),
                     new FilterWithOperator('column', new Value('max'), '<', 'lt'),
