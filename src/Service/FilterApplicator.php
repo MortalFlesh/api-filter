@@ -4,7 +4,9 @@ namespace Lmc\ApiFilter\Service;
 
 use Lmc\ApiFilter\Applicator\ApplicatorInterface;
 use Lmc\ApiFilter\Entity\Filterable;
+use Lmc\ApiFilter\Filter\FilterIn;
 use Lmc\ApiFilter\Filter\FilterInterface;
+use Lmc\ApiFilter\Filter\FilterWithOperator;
 use Lmc\ApiFilter\Filters\FiltersInterface;
 
 class FilterApplicator
@@ -24,9 +26,15 @@ class FilterApplicator
 
     public function apply(FilterInterface $filter, Filterable $filterable): Filterable
     {
-        return $this
-            ->findApplicatorFor($filterable)
-            ->applyTo($filter, $filterable);
+        $applicator = $this->findApplicatorFor($filterable);
+
+        if ($filter instanceof FilterWithOperator) {
+            return $applicator->applyFilterWithOperator($filter, $filterable);
+        } elseif ($filter instanceof FilterIn) {
+            return $applicator->applyFilterIn($filter, $filterable);
+        }
+
+        throw new \InvalidArgumentException(sprintf('Unsupported filter given "%s".', get_class($filter)));
     }
 
     private function findApplicatorFor(Filterable $filterable): ApplicatorInterface

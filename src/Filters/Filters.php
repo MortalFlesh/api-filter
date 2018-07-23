@@ -4,6 +4,7 @@ namespace Lmc\ApiFilter\Filters;
 
 use Lmc\ApiFilter\Applicator\ApplicatorInterface;
 use Lmc\ApiFilter\Entity\Filterable;
+use Lmc\ApiFilter\Filter\FilterIn;
 use Lmc\ApiFilter\Filter\FilterInterface;
 use Lmc\ApiFilter\Service\FilterApplicator;
 use MF\Collection\Immutable\Generic\IList;
@@ -23,7 +24,7 @@ class Filters implements FiltersInterface
     }
 
     /** @param FilterInterface[] $filters */
-    public function __construct(array $filters)
+    public function __construct(array $filters = [])
     {
         $this->filters = ListCollection::fromT(FilterInterface::class, $filters);
     }
@@ -61,5 +62,33 @@ class Filters implements FiltersInterface
                 new Map('string', 'any')
             )
             ->toArray();
+    }
+
+    public function addFilter(FilterInterface $filter): FiltersInterface
+    {
+        if ($filter instanceof FilterIn && $this->shouldMergeInFilter($filter)) {
+            /** @var FilterIn $inFilter */
+            $inFilter = $this->filters
+                ->filter($this->findInFilter($filter))
+                ->first();
+
+            $inFilter->addValue($filter->getValue());
+        } else {
+            $this->filters = $this->filters->add($filter);
+        }
+
+        return $this;
+    }
+
+    private function shouldMergeInFilter(FilterIn $filter): bool
+    {
+        return $this->filters->containsBy($this->findInFilter($filter));
+    }
+
+    private function findInFilter(FilterIn $filter): \Closure
+    {
+        return function (FilterInterface $item) use ($filter) {
+            return $item->getOperator() === FilterIn::OPERATOR && $item->getColumn() === $filter->getColumn();
+        };
     }
 }

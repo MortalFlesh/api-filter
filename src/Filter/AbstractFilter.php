@@ -34,4 +34,9 @@ abstract class AbstractFilter implements FilterInterface
     {
         return $this->value;
     }
+
+    protected function setValue(Value $value): void
+    {
+        $this->value = $value;
+    }
 }
