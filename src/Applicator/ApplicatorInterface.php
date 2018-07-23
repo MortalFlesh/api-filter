@@ -3,7 +3,6 @@
 namespace Lmc\ApiFilter\Applicator;
 
 use Lmc\ApiFilter\Entity\Filterable;
-use Lmc\ApiFilter\Escape\EscapeInterface;
 use Lmc\ApiFilter\Filter\FilterInterface;
 use MF\Collection\Immutable\ITuple;
 
@@ -19,8 +18,6 @@ interface ApplicatorInterface
      * // SELECT * FROM table WHERE 1 AND title = 'foo'
      */
     public function applyTo(FilterInterface $filter, Filterable $filterable): Filterable;
-
-    public function setEscape(EscapeInterface $escape): void;
 
     public function getPreparedValue(FilterInterface $filter): ITuple;
 }

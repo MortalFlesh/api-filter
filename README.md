@@ -28,7 +28,6 @@ GET http://host/endpoint/?field=value
 // in DI container/factory
 $apiFilter = new ApiFilter();
 $apiFilter->registerApplicator(...);  // optional, when you want to use non-standard implementation
-$apiFilter->registerEscape(...);      // optional, when you want to use non-standard implementation
 
 // in service/controller/...
 $filters = $apiFilter->parseFilters($request->query->all());
@@ -183,7 +182,6 @@ composer all
 ```
 
 ## Todo
-- remove escapes
 - allow Tuples in values
     - request with Tuple
     ```http request

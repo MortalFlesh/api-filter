@@ -4,7 +4,6 @@ namespace Lmc\ApiFilter\Applicator;
 
 use Doctrine\ORM\QueryBuilder;
 use Lmc\ApiFilter\Entity\Filterable;
-use Lmc\ApiFilter\Escape\EscapeInterface;
 use Lmc\ApiFilter\Filter\FilterInterface;
 
 class DoctrineQueryBuilderApplicator extends AbstractApplicator
@@ -36,10 +35,5 @@ class DoctrineQueryBuilderApplicator extends AbstractApplicator
         );
 
         return new Filterable($queryBuilder->andWhere($expr));
-    }
-
-    public function setEscape(EscapeInterface $escape): void
-    {
-        // this applicator does not supports custom escaping
     }
 }
