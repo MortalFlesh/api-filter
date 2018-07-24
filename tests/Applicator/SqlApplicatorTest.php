@@ -9,12 +9,12 @@ use Lmc\ApiFilter\Filter\FilterWithOperator;
 
 class SqlApplicatorTest extends AbstractTestCase
 {
-    /** @var ApplicatorSql */
+    /** @var SqlApplicator */
     private $sqlApplicator;
 
     protected function setUp(): void
     {
-        $this->sqlApplicator = new ApplicatorSql();
+        $this->sqlApplicator = new SqlApplicator();
     }
 
     /**
