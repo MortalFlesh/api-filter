@@ -8,23 +8,15 @@ class FilterWithOperator extends AbstractFilter
 {
     /** @var string */
     private $operator;
-    /** @var string */
-    private $title;
 
     public function __construct(string $column, Value $value, string $operator, string $title)
     {
-        parent::__construct($column, $value);
+        parent::__construct($title, $column, $value);
         $this->operator = $operator;
-        $this->title = $title;
     }
 
     public function getOperator(): string
     {
         return $this->operator;
-    }
-
-    public function getTitle(): string
-    {
-        return $this->title;
     }
 }
