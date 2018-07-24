@@ -48,11 +48,9 @@ class FilterApplicator
 
     public function getPreparedValue(FilterInterface $filter, Filterable $filterable): array
     {
-        [$column, $value] = $this
+        return $this
             ->findApplicatorFor($filterable)
             ->getPreparedValue($filter);
-
-        return [$column => $value];
     }
 
     public function applyAll(FiltersInterface $filters, Filterable $filterable): Filterable

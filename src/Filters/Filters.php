@@ -52,7 +52,11 @@ class Filters implements FiltersInterface
         return $this->filters
             ->reduce(
                 function (IMap $preparedValues, FilterInterface $filter) use ($applicator) {
-                    return $preparedValues->set(...$applicator->getPreparedValue($filter));
+                    foreach ($applicator->getPreparedValue($filter) as $column => $value) {
+                        $preparedValues = $preparedValues->set($column, $value);
+                    }
+
+                    return $preparedValues;
                 },
                 new Map('string', 'any')
             )

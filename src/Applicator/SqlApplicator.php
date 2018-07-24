@@ -27,11 +27,11 @@ class SqlApplicator extends AbstractApplicator
             : $filterable;
 
         $result = sprintf(
-            '%s AND %s %s :%s',
+            '%s AND %s %s %s',
             $sql,
             $filter->getColumn(),
             $filter->getOperator(),
-            $this->getColumnPlaceholder($filter)
+            $this->getColumnSinglePlaceholder(':', $filter)
         );
 
         return new Filterable($result);

@@ -27,11 +27,11 @@ class DoctrineQueryBuilderApplicator extends AbstractApplicator
         [$alias] = $queryBuilder->getAllAliases();
 
         $expr = sprintf(
-            '%s.%s %s :%s',
+            '%s.%s %s %s',
             $alias,
             $filter->getColumn(),
             $filter->getOperator(),
-            $this->getColumnPlaceholder($filter)
+            $this->getColumnSinglePlaceholder(':', $filter)
         );
 
         return new Filterable($queryBuilder->andWhere($expr));
