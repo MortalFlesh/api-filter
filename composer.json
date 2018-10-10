@@ -14,8 +14,9 @@
     },
     "require": {
         "php": "^7.1",
+        "ext-mbstring": "*",
         "beberlei/assert": "^2.9 || ^3.0",
-        "mf/collections-php": "^3.10"
+        "mf/collections-php": "^3.14"
     },
     "suggest": {
         "doctrine/orm": "To allow applying filters directly to QueryBuilder"

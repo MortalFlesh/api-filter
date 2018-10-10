@@ -2,94 +2,52 @@
 
 namespace Lmc\ApiFilter\Service;
 
-use Assert\Assertion;
-use Lmc\ApiFilter\Entity\Value;
-use Lmc\ApiFilter\Filter\FilterIn;
-use Lmc\ApiFilter\Filter\FilterInterface;
-use Lmc\ApiFilter\Filter\FilterWithOperator;
 use Lmc\ApiFilter\Filters\Filters;
 use Lmc\ApiFilter\Filters\FiltersInterface;
-use MF\Collection\Immutable\ITuple;
-use MF\Collection\Immutable\Seq;
-use MF\Collection\Immutable\Tuple;
+use Lmc\ApiFilter\Service\Parser\ParserInterface;
+use Lmc\ApiFilter\Service\Parser\SingleColumnArrayValueParser;
+use Lmc\ApiFilter\Service\Parser\SingleColumnSingleValueParser;
+use Lmc\ApiFilter\Service\Parser\TupleColumnArrayValueParser;
+use Lmc\ApiFilter\Service\Parser\TupleColumnTupleValueParser;
+use Lmc\ApiFilter\Service\Parser\UnsupportedTupleCombinationParser;
+use MF\Collection\Mutable\Generic\PrioritizedCollection;
 
 class QueryParametersParser
 {
+    /** @var PrioritizedCollection|ParserInterface[] */
+    private $parsers;
+
+    public function __construct(FilterFactory $filterFactory)
+    {
+        $this->parsers = new PrioritizedCollection(ParserInterface::class);
+        $this->parsers->add(new TupleColumnTupleValueParser($filterFactory), 5);
+        $this->parsers->add(new TupleColumnArrayValueParser($filterFactory), 4);
+        $this->parsers->add(new UnsupportedTupleCombinationParser($filterFactory), 3);
+        $this->parsers->add(new SingleColumnArrayValueParser($filterFactory), 2);
+        $this->parsers->add(new SingleColumnSingleValueParser($filterFactory), 1);
+    }
+
     public function parse(array $queryParameters): FiltersInterface
     {
-        return Seq::init(function () use ($queryParameters) {
-            foreach ($queryParameters as $column => $values) {
-                $columns = $this->parseColumns($column);
-                $columnsCount = count($columns);
-
-                foreach ($this->normalizeFilters($values) as $filter => $value) {
-                    $this->assertTupleIsAllowed($filter, $columnsCount);
-                    $parsedValues = $this->parseValues($value, $columnsCount);
-
-                    foreach ($columns as $column) {
-                        yield Tuple::of($column, $filter, new Value(array_shift($parsedValues)));
-                    }
-                }
-            }
-        })
-            ->reduce(
-                function (FiltersInterface $filters, ITuple $tuple): FiltersInterface {
-                    return $filters->addFilter($this->createFilter(...$tuple));
-                },
-                new Filters()
-            );
-    }
-
-    private function parseColumns(string $column): array
-    {
-        return mb_substr($column, 0, 1) === '('
-            ? Tuple::parse($column)->toArray()
-            : [$column];
-    }
-
-    private function normalizeFilters($values): array
-    {
-        return is_array($values)
-            ? $values
-            : ['eq' => $values];
-    }
-
-    private function assertTupleIsAllowed(string $filter, int $columnsCount): void
-    {
-        Assertion::false($columnsCount > 1 && $filter === 'in', 'Tuples are not allowed in IN filter.');
-    }
-
-    private function parseValues($value, int $columnsCount): array
-    {
-        return $columnsCount > 1
-            ? Tuple::parse($value, $columnsCount)->toArray()
-            : [$value];
-    }
-
-    private function createFilter(string $column, string $filter, Value $value): FilterInterface
-    {
-        switch (mb_strtolower($filter)) {
-            case 'eq':
-                return new FilterWithOperator($column, $value, '=', 'eq');
-            case 'gt':
-                return new FilterWithOperator($column, $value, '>', 'gt');
-            case 'lt':
-                return new FilterWithOperator($column, $value, '<', 'lt');
-            case 'lte':
-                return new FilterWithOperator($column, $value, '<=', 'lt');
-            case 'gte':
-                return new FilterWithOperator($column, $value, '>=', 'gte');
-            case 'in':
-                return new FilterIn($column, $value);
+        $filters = new Filters();
+        foreach ($this->parseFilters($queryParameters) as $filter) {
+            $filters->addFilter($filter);
         }
 
-        throw new \InvalidArgumentException(
-            sprintf(
-                'Filter "%s" is not implemented. For column "%s" with value "%s".',
-                $filter,
-                $column,
-                $value->getValue()
-            )
-        );
+        return $filters;
+    }
+
+    public function parseFilters(array $queryParameters): iterable
+    {
+        foreach ($queryParameters as $rawColumn => $rawValue) {
+            foreach ($this->parsers as $parser) {
+                if ($parser->supports($rawColumn, $rawValue)) {
+                    yield from $parser->parse($rawColumn, $rawValue);
+
+                    // continue to next query parameter
+                    continue 2;
+                }
+            }
+        }
     }
 }

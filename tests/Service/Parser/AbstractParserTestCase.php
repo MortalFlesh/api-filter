@@ -1,0 +1,224 @@
+<?php declare(strict_types=1);
+
+namespace Lmc\ApiFilter\Service\Parser;
+
+use Lmc\ApiFilter\AbstractTestCase;
+use Lmc\ApiFilter\Entity\Value;
+use Lmc\ApiFilter\Service\FilterFactory;
+use Lmc\ApiFilter\Service\Parser\Fixtures\DummyFilter;
+use Mockery as m;
+
+abstract class AbstractParserTestCase extends AbstractTestCase
+{
+    private const CASES = [
+        self::CASE_SCALAR_COLUMN_AND_SCALAR_VALUE,
+        self::CASE_SCALAR_COLUMN_AND_ARRAY_VALUE,
+        self::CASE_SCALAR_COLUMN_AND_ARRAY_VALUES,
+        self::CASE_SCALAR_COLUMN_AND_TUPLE_VALUE,
+        self::CASE_TUPLE_COLUMN_AND_TUPLE_VALUE,
+        self::CASE_TUPLE_COLUMN_AND_TUPLE_VALUE_IMPLICIT_FILTERS,
+        self::CASE_TUPLE_COLUMN_AND_ARRAY_VALUE,
+        self::CASE_TUPLE_COLUMN_WITH_FILTER_AND_TUPLE_VALUE,
+        self::CASE_TUPLE_COLUMN_AND_SCALAR_VALUE,
+    ];
+
+    protected const CASE_SCALAR_COLUMN_AND_SCALAR_VALUE = [
+        'scalar column + scalar value' => [
+            'column',
+            'value',
+            [
+                ['column', 'eq', 'value'],
+            ],
+        ],
+    ];
+    protected const CASE_SCALAR_COLUMN_AND_ARRAY_VALUE = [
+        'scalar column + array value' => [
+            'column',
+            ['gt' => 'value'],
+            [
+                ['column', 'gt', 'value'],
+            ],
+        ],
+    ];
+    protected const CASE_SCALAR_COLUMN_AND_ARRAY_VALUES = [
+        'scalar column + array values' => [
+            'column',
+            ['gte' => 'value', 'lte' => 'value2'],
+            [
+                ['column', 'gte', 'value'],
+                ['column', 'lte', 'value2'],
+            ],
+        ],
+    ];
+    protected const CASE_SCALAR_COLUMN_AND_TUPLE_VALUE = [
+        'scalar column + tuple value' => [
+            'column',
+            '(val1,val2)',
+            [], // not supported atm
+        ],
+    ];
+    protected const CASE_TUPLE_COLUMN_AND_TUPLE_VALUE = [
+        'tuple column + tuple value' => [
+            '(col1,col2)',
+            '(val1,val2)',
+            [
+                ['col1', 'eq', 'val1'],
+                ['col2', 'eq', 'val2'],
+            ],
+        ],
+    ];
+    protected const CASE_TUPLE_COLUMN_AND_TUPLE_VALUE_IMPLICIT_FILTERS = [
+        'implicit filters in tuple column + value' => [
+            '(col1,col2)',
+            '(value,[min;max])',
+            [
+                ['col1', 'eq', 'value'],
+                ['col2', 'in', ['min', 'max']],
+            ],
+        ],
+    ];
+    protected const CASE_TUPLE_COLUMN_AND_ARRAY_VALUE = [
+        'tuple column + array value' => [
+            '(col1,col2)',
+            ['lte' => '(val1,val2)'],
+            [
+                ['col1', 'lte', 'val1'],
+                ['col2', 'lte', 'val2'],
+            ],
+        ],
+    ];
+    protected const CASE_TUPLE_COLUMN_WITH_FILTER_AND_TUPLE_VALUE = [
+        'tuple column with filter + tuple value' => [
+            '(col1[gt],col2[lt])',
+            '(1,10)',
+            [
+                ['col1', 'gt', 1],
+                ['col2', 'lt', 10],
+            ],
+        ],
+    ];
+    protected const CASE_TUPLE_COLUMN_AND_SCALAR_VALUE = [
+        'tuple column + scalar value' => [
+            '(col1,col2)',
+            'value',
+            [], // not supported atm
+        ],
+    ];
+
+    /** @var ParserInterface */
+    protected $parser;
+
+    protected function mockFilterFactory(): FilterFactory
+    {
+        $filterFactory = m::mock(FilterFactory::class);
+        $filterFactory->shouldReceive('createFilter')
+            ->andReturnUsing(function (string $column, string $filter, Value $value) {
+                return new DummyFilter($column, $filter, $value->getValue());
+            });
+
+        return $filterFactory;
+    }
+
+    /**
+     * @param mixed $rawColumn
+     * @param mixed $rawValue
+     *
+     * @test
+     * @dataProvider provideSupportedColumnAndValue
+     */
+    public function shouldSupportColumnAndValue($rawColumn, $rawValue): void
+    {
+        $result = $this->parser->supports($rawColumn, $rawValue);
+
+        $this->assertTrue($result);
+    }
+
+    abstract public function provideSupportedColumnAndValue(): array;
+
+    /**
+     * @param mixed $rawColumn
+     * @param mixed $rawValue
+     *
+     * @test
+     * @dataProvider provideNotSupportedColumnAndValue
+     */
+    public function shouldNotSupportColumnAndValue($rawColumn, $rawValue): void
+    {
+        $result = $this->parser->supports($rawColumn, $rawValue);
+
+        $this->assertFalse($result);
+    }
+
+    abstract public function provideNotSupportedColumnAndValue(): array;
+
+    /**
+     * @param mixed $rawColumn
+     * @param mixed $rawValue
+     *
+     * @test
+     * @dataProvider provideParseableColumnAndValue
+     */
+    public function shouldParseColumnAndValue($rawColumn, $rawValue, array $expected): void
+    {
+        $result = [];
+
+        /** @var DummyFilter $filter */
+        foreach ($this->parser->parse($rawColumn, $rawValue) as $filter) {
+            $this->assertInstanceOf(DummyFilter::class, $filter);
+            $result[] = $filter->toArray();
+        }
+
+        $this->assertSame($expected, $result);
+    }
+
+    abstract public function provideParseableColumnAndValue(): array;
+
+    /**
+     * @test
+     */
+    final public function shouldCoverSupportingOfAllCases(): void
+    {
+        $cases = $this->provideSupportedColumnAndValue() + $this->provideNotSupportedColumnAndValue();
+        $allCasesCount = count(self::CASES);
+
+        $this->assertCount(
+            $allCasesCount,
+            $cases,
+            sprintf(
+                "There must be covered all cases in every parser test. You are missing %d:\n - %s",
+                $allCasesCount - count($cases),
+                implode("\n - ", $this->getMissingCases($cases))
+            )
+        );
+    }
+
+    private function getMissingCases(array $cases): array
+    {
+        $missing = [];
+        foreach (self::CASES as $case) {
+            [$caseKey] = array_keys($case);
+            if (!array_key_exists($caseKey, $cases)) {
+                $missing[] = $caseKey;
+            }
+        }
+
+        return $missing;
+    }
+
+    /**
+     * @test
+     */
+    final public function shouldCoverParsingAllSupportedCases(): void
+    {
+        $supported = $this->provideSupportedColumnAndValue();
+        $casesForParsing = $this->provideParseableColumnAndValue();
+
+        foreach (array_keys($supported) as $case) {
+            $this->assertArrayHasKey(
+                $case,
+                $casesForParsing,
+                sprintf('Case "%s" is not covered in parse test.', $case)
+            );
+        }
+    }
+}

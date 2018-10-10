@@ -4,6 +4,10 @@
 <!-- There should always be "Unreleased" section at the beginning. -->
 
 ## Unreleased
+- Allow arrow in `Tuple`
+- Allow a specific filter from columns in `Tuple`
+- Add implicit `IN` filter for column in `Tuple` with array value
+- Fix parsing `lte` filter
 
 ## 1.0.0 - 2018-08-28
 - Initial version.
