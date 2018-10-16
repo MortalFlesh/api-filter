@@ -6,6 +6,7 @@ use Lmc\ApiFilter\Applicator\ApplicatorInterface;
 use Lmc\ApiFilter\Applicator\QueryBuilderApplicator;
 use Lmc\ApiFilter\Constant\Priority;
 use Lmc\ApiFilter\Entity\Filterable;
+use Lmc\ApiFilter\Exception\ApiFilterException;
 use Lmc\ApiFilter\Filter\FilterInterface;
 use Lmc\ApiFilter\Filters\FiltersInterface;
 use Lmc\ApiFilter\Service\FilterApplicator;
@@ -48,11 +49,16 @@ class ApiFilter
      * //     }
      * // ]
      *
+     * @throws ApiFilterException
      * @return FiltersInterface|FilterInterface[]
      */
     public function parseFilters(array $queryParameters): FiltersInterface
     {
-        return $this->parser->parse($queryParameters);
+        try {
+            return $this->parser->parse($queryParameters);
+        } catch (\Throwable $exception) {
+            throw ApiFilterException::createFrom($exception);
+        }
     }
 
     /**
@@ -73,11 +79,16 @@ class ApiFilter
      * $preparedValue = $apiFilter->getPreparedValue($firstFilters, $sql); // ['title_eq' => 'foo']
      *
      * @param mixed $filterable of type <T> - this must be supported by any applicator
+     * @throws ApiFilterException
      * @return mixed of type <T> - same as given filterable
      */
     public function applyFilter(FilterInterface $filter, $filterable)
     {
-        return $this->applicator->apply($filter, new Filterable($filterable))->getValue();
+        try {
+            return $this->applicator->apply($filter, new Filterable($filterable))->getValue();
+        } catch (\Throwable $exception) {
+            throw ApiFilterException::createFrom($exception);
+        }
     }
 
     /**
@@ -93,10 +104,15 @@ class ApiFilter
      * $preparedValue = $apiFilter->getPreparedValue($firstFilters, $sql); // ['title_eq' => 'foo']
      *
      * @param mixed $filterable of type <T>
+     * @throws ApiFilterException
      */
     public function getPreparedValue(FilterInterface $filter, $filterable): array
     {
-        return $this->applicator->getPreparedValue($filter, new Filterable($filterable));
+        try {
+            return $this->applicator->getPreparedValue($filter, new Filterable($filterable));
+        } catch (\Throwable $exception) {
+            throw ApiFilterException::createFrom($exception);
+        }
     }
 
     /**
@@ -117,11 +133,16 @@ class ApiFilter
      * $preparedValues = $apiFilter->getPreparedValues($filters, $sql); // ['title_eq' => 'foo']
      *
      * @param mixed $filterable of type <T> - this must be supported by any applicator
+     * @throws ApiFilterException
      * @return mixed of type <T> - same as given filterable
      */
     public function applyFilters(FiltersInterface $filters, $filterable)
     {
-        return $this->applicator->applyAll($filters, new Filterable($filterable))->getValue();
+        try {
+            return $this->applicator->applyAll($filters, new Filterable($filterable))->getValue();
+        } catch (\Throwable $exception) {
+            throw ApiFilterException::createFrom($exception);
+        }
     }
 
     /**
@@ -137,10 +158,15 @@ class ApiFilter
      * $preparedValues = $apiFilter->getPreparedValues($filters, $sql); // ['title_eq' => 'foo']
      *
      * @param mixed $filterable of type <T>
+     * @throws ApiFilterException
      */
     public function getPreparedValues(FiltersInterface $filters, $filterable): array
     {
-        return $this->applicator->getPreparedValues($filters, new Filterable($filterable));
+        try {
+            return $this->applicator->getPreparedValues($filters, new Filterable($filterable));
+        } catch (\Throwable $exception) {
+            throw ApiFilterException::createFrom($exception);
+        }
     }
 
     /**

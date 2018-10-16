@@ -8,6 +8,7 @@
 - Allow a specific filter from columns in `Tuple`
 - Add implicit `IN` filter for column in `Tuple` with array value
 - Fix parsing `lte` filter
+- Add `ApiFilterException` to covers all internal exceptions
 
 ## 1.0.0 - 2018-08-28
 - Initial version.
