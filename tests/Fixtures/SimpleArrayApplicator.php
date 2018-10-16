@@ -1,7 +1,8 @@
 <?php declare(strict_types=1);
 
-namespace Lmc\ApiFilter\Applicator;
+namespace Lmc\ApiFilter\Fixtures;
 
+use Lmc\ApiFilter\Applicator\ApplicatorInterface;
 use Lmc\ApiFilter\Entity\Filterable;
 use Lmc\ApiFilter\Filter\FilterFunction;
 use Lmc\ApiFilter\Filter\FilterIn;
@@ -9,9 +10,12 @@ use Lmc\ApiFilter\Filter\FilterInterface;
 use Lmc\ApiFilter\Filter\FilterWithOperator;
 use Lmc\ApiFilter\Filter\FunctionParameter;
 
-interface ApplicatorInterface
+class SimpleArrayApplicator implements ApplicatorInterface
 {
-    public function supports(Filterable $filterable): bool;
+    public function supports(Filterable $filterable): bool
+    {
+        return is_array($filterable->getValue());
+    }
 
     /**
      * Apply filter with operator to filterable and returns the result
@@ -23,7 +27,13 @@ interface ApplicatorInterface
      * $simpleSqlApplicator->applyFilterWithOperator($filter, $sql);      // SELECT * FROM table WHERE title = :title_eq
      * $preparedValues = $simpleSqlApplicator->getPreparedValue($filter); // ['title_eq' => 'foo']
      */
-    public function applyFilterWithOperator(FilterWithOperator $filter, Filterable $filterable): Filterable;
+    public function applyFilterWithOperator(FilterWithOperator $filter, Filterable $filterable): Filterable
+    {
+        $array = $filterable->getValue();
+        $array[] = [$filter->getColumn(), $filter->getOperator(), $filter->getValue()->getValue()];
+
+        return new Filterable($array);
+    }
 
     /**
      * Apply IN filter to filterable and returns the result
@@ -35,20 +45,13 @@ interface ApplicatorInterface
      * $sql = $simpleSqlApplicator->applyFilterIn($filter, $sql);         // SELECT * FROM table WHERE id IN (:id_in_0, :id_in_1)
      * $preparedValues = $simpleSqlApplicator->getPreparedValue($filter); // ['id_in_0' => 1, 'id_in_1' => 2]
      */
-    public function applyFilterIn(FilterIn $filter, Filterable $filterable): Filterable;
+    public function applyFilterIn(FilterIn $filter, Filterable $filterable): Filterable
+    {
+        $array = $filterable->getValue();
+        $array[] = [$filter->getColumn(), 'in', $filter->getValue()->getValue()];
 
-    /**
-     * Prepared values for applied filter
-     *
-     * @example
-     * $filterWithOperator = new FilterWithOperator('title', 'foo', '=', 'eq');
-     * $preparedValues = $simpleSqlApplicator->getPreparedValue($filter);  // ['title_eq' => 'foo']
-     *
-     * @example
-     * $filter = new FilterIn('id', [1, 2]);
-     * $preparedValues = $simpleSqlApplicator->getPreparedValue($filter);  // ['id_in_0' => 1, 'id_in_1' => 2]
-     */
-    public function getPreparedValue(FilterInterface $filter): array;
+        return new Filterable($array);
+    }
 
     /**
      * Apply filter with defined function to filterable and returns the result
@@ -81,7 +84,31 @@ interface ApplicatorInterface
      *
      * @param FunctionParameter[] $parameters
      */
-    public function applyFilterFunction(FilterFunction $filter, Filterable $filterable, array $parameters): Filterable;
+    public function applyFilterFunction(FilterFunction $filter, Filterable $filterable, array $parameters): Filterable
+    {
+        $function = $filter->getValue()->getValue();
+
+        $array = $filterable->getValue();
+        $array[] = [$filter->getColumn() => $function()];
+
+        return new Filterable($array);
+    }
+
+    /**
+     * Prepared values for applied filter
+     *
+     * @example
+     * $filterWithOperator = new FilterWithOperator('title', 'foo', '=', 'eq');
+     * $preparedValues = $simpleSqlApplicator->getPreparedValue($filter);  // ['title_eq' => 'foo']
+     *
+     * @example
+     * $filter = new FilterIn('id', [1, 2]);
+     * $preparedValues = $simpleSqlApplicator->getPreparedValue($filter);  // ['id_in_0' => 1, 'id_in_1' => 2]
+     */
+    public function getPreparedValue(FilterInterface $filter): array
+    {
+        throw new \Exception(sprintf('Method %s is not implemented yet.', __METHOD__));
+    }
 
     /**
      * Prepared values for applied function
@@ -91,5 +118,8 @@ interface ApplicatorInterface
      *
      * @param FunctionParameter[] $parameters
      */
-    public function getPreparedValuesForFunction(array $parameters): array;
+    public function getPreparedValuesForFunction(array $parameters): array
+    {
+        throw new \Exception(sprintf('Method %s is not implemented yet.', __METHOD__));
+    }
 }

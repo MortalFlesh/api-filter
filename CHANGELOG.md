@@ -9,6 +9,7 @@
 - Add implicit `IN` filter for column in `Tuple` with array value
 - Fix parsing `lte` filter
 - Add `ApiFilterException` to covers all internal exceptions
+- Allow register a `function` to `ApiFilter`
 
 ## 1.0.0 - 2018-08-28
 - Initial version.

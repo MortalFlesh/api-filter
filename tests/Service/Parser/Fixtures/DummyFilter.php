@@ -18,7 +18,7 @@ class DummyFilter implements FilterInterface
     {
         $this->column = $column;
         $this->operator = $operator;
-        $this->value = new Value($value);
+        $this->value = new Value(is_callable($value) ? 'callable' : $value);
     }
 
     public function getColumn(): string

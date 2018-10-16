@@ -4,19 +4,26 @@ namespace Lmc\ApiFilter\Service;
 
 use Lmc\ApiFilter\AbstractTestCase;
 use Lmc\ApiFilter\Entity\Value;
+use Lmc\ApiFilter\Filter\FilterFunction;
 use Lmc\ApiFilter\Filter\FilterIn;
 use Lmc\ApiFilter\Filter\FilterWithOperator;
+use Lmc\ApiFilter\Filter\FunctionParameter;
 use Lmc\ApiFilter\Filters\Filters;
 
 class QueryParametersParserTest extends AbstractTestCase
 {
     /** @var QueryParametersParser */
     private $queryParametersParser;
+    /** @var Functions */
+    private $functions;
 
     protected function setUp(): void
     {
+        $this->functions = new Functions();
+
         $this->queryParametersParser = new QueryParametersParser(
-            new FilterFactory()
+            new FilterFactory(),
+            $this->functions
         );
     }
 
@@ -24,8 +31,15 @@ class QueryParametersParserTest extends AbstractTestCase
      * @test
      * @dataProvider provideQueryParameters
      */
-    public function shouldParseQueryParameters(array $queryParameters, array $expectedFilters): void
-    {
+    public function shouldParseQueryParameters(
+        array $queryParameters,
+        array $expectedFilters,
+        array $functionsToRegister = []
+    ): void {
+        foreach ($functionsToRegister as $function) {
+            $this->functions->register(...$function);
+        }
+
         $expectedFilters = Filters::from($expectedFilters);
 
         $result = $this->queryParametersParser->parse($queryParameters);
@@ -36,7 +50,7 @@ class QueryParametersParserTest extends AbstractTestCase
     public function provideQueryParameters(): array
     {
         return [
-            // queryParameters, expectedFilters
+            // queryParameters, expectedFilters, functionsToRegister
             'empty' => [[], []],
             'simple - implicit eq' => [
                 ['title' => 'foo'],
@@ -160,6 +174,75 @@ class QueryParametersParserTest extends AbstractTestCase
                     new FilterWithOperator('version', new Value('latest'), '=', 'eq'),
                 ],
             ],
+            'function - fullName' => [
+                ['fullName' => '(Jon, Snow)'],
+                [
+                    new FilterFunction('fullName', new Value($this->createBlankCallback('fullName'))),
+                    new FunctionParameter('firstName', new Value('Jon')),
+                    new FunctionParameter('surname', new Value('Snow')),
+                ],
+                [
+                    ['fullName', ['firstName', 'surname'], $this->createBlankCallback('fullName')],
+                ],
+            ],
+            'function - perfectWife + spot + name' => [
+                ['perfectWife' => '(18, 30, [DD; D])', '(zone,bucket)' => '(all,common)', 'name' => 'Jon'],
+                [
+                    new FilterFunction('perfectWife', new Value($this->createBlankCallback('perfectWife'))),
+                    new FunctionParameter('ageFrom', new Value(18)),
+                    new FunctionParameter('ageTo', new Value(30)),
+                    new FunctionParameter('size', new Value(['DD', 'D'])),
+                    new FilterFunction('spot', new Value($this->createBlankCallback('spot'))),
+                    new FunctionParameter('zone', new Value('all')),
+                    new FunctionParameter('bucket', new Value('common')),
+                    new FilterWithOperator('name', new Value('Jon'), '=', 'eq'),
+                ],
+                [
+                    ['perfectWife', ['ageFrom', 'ageTo', 'size'], $this->createBlankCallback('perfectWife')],
+                    ['spot', ['zone', 'bucket'], $this->createBlankCallback('spot')],
+                ],
+            ],
+            'explicit - function - perfectWife + spot + name' => [
+                ['perfectWife' => '(18, 30, [DD; D])', '(fun,zone,bucket)' => '(spot,all,common)', 'name' => 'Jon'],
+                [
+                    new FilterFunction('perfectWife', new Value($this->createBlankCallback('perfectWife'))),
+                    new FunctionParameter('ageFrom', new Value(18)),
+                    new FunctionParameter('ageTo', new Value(30)),
+                    new FunctionParameter('size', new Value(['DD', 'D'])),
+                    new FilterFunction('spot', new Value($this->createBlankCallback('spot'))),
+                    new FunctionParameter('zone', new Value('all')),
+                    new FunctionParameter('bucket', new Value('common')),
+                    new FilterWithOperator('name', new Value('Jon'), '=', 'eq'),
+                ],
+                [
+                    ['perfectWife', ['ageFrom', 'ageTo', 'size'], $this->createBlankCallback('perfectWife')],
+                    ['spot', ['zone', 'bucket'], $this->createBlankCallback('spot')],
+                ],
+            ],
+            'implicit by values - function - perfectWife + spot + name' => [
+                [
+                    'ageFrom' => 18,
+                    'ageTo' => 30,
+                    'name' => 'Jon',
+                    'size' => ['DD', 'D'],
+                    'zone' => 'all',
+                    'bucket' => 'common',
+                ],
+                [
+                    new FilterFunction('perfectWife', new Value($this->createBlankCallback('perfectWife'))),
+                    new FunctionParameter('ageFrom', new Value(18)),
+                    new FunctionParameter('ageTo', new Value(30)),
+                    new FunctionParameter('size', new Value(['DD', 'D'])),
+                    new FilterFunction('spot', new Value($this->createBlankCallback('spot'))),
+                    new FunctionParameter('zone', new Value('all')),
+                    new FunctionParameter('bucket', new Value('common')),
+                    new FilterWithOperator('name', new Value('Jon'), '=', 'eq'),
+                ],
+                [
+                    ['perfectWife', ['ageFrom', 'ageTo', 'size'], $this->createBlankCallback('perfectWife')],
+                    ['spot', ['zone', 'bucket'], $this->createBlankCallback('spot')],
+                ],
+            ],
         ];
     }
 
@@ -189,7 +272,7 @@ class QueryParametersParserTest extends AbstractTestCase
                 ['column' => ['unknown' => 'value']],
                 'Filter "unknown" is not implemented. For column "column" with value "value".',
             ],
-            'function' => [
+            'undefined function' => [
                 ['function' => '(arg1, arg2)'],
                 'Invalid combination of a tuple and a scalar. Column function and value (arg1, arg2).',
             ],

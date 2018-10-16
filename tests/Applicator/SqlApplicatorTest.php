@@ -5,7 +5,9 @@ namespace Lmc\ApiFilter\Applicator;
 use Lmc\ApiFilter\AbstractTestCase;
 use Lmc\ApiFilter\Entity\Filterable;
 use Lmc\ApiFilter\Entity\Value;
+use Lmc\ApiFilter\Filter\FilterFunction;
 use Lmc\ApiFilter\Filter\FilterWithOperator;
+use Lmc\ApiFilter\Filter\FunctionParameter;
 
 class SqlApplicatorTest extends AbstractTestCase
 {
@@ -64,5 +66,43 @@ class SqlApplicatorTest extends AbstractTestCase
         $result = $this->sqlApplicator->getPreparedValue($filter);
 
         $this->assertSame(['col_eq_0' => 1, 'col_eq_1' => 2], $result);
+    }
+
+    /**
+     * @test
+     */
+    public function shouldApplyFunction(): void
+    {
+        $filterable = new Filterable('SELECT * FROM person');
+
+        $filter = new FilterFunction(
+            'fullName',
+            new Value(function ($filterable, FunctionParameter $firstName, FunctionParameter $surname) {
+                $filterable = $this->sqlApplicator->applyFilterWithOperator(
+                    new FilterWithOperator($firstName->getColumn(), $firstName->getValue(), '=', $firstName->getTitle()),
+                    $filterable
+                );
+
+                $filterable = $this->sqlApplicator->applyFilterWithOperator(
+                    new FilterWithOperator($surname->getColumn(), $surname->getValue(), '=', $surname->getTitle()),
+                    $filterable
+                );
+
+                return $filterable;
+            })
+        );
+        $parameters = [
+            new FunctionParameter('firstName', new Value('Jon')),
+            new FunctionParameter('surname', new Value('Snow')),
+        ];
+
+        $result = $this->sqlApplicator->applyFilterFunction($filter, $filterable, $parameters);
+        $preparedValues = $this->sqlApplicator->getPreparedValuesForFunction($parameters);
+
+        $this->assertSame(
+            'SELECT * FROM person WHERE 1 AND firstName = :firstName_fun AND surname = :surname_fun',
+            $result->getValue()
+        );
+        $this->assertSame(['firstName_fun' => 'Jon', 'surname_fun' => 'Snow'], $preparedValues);
     }
 }

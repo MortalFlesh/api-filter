@@ -3,8 +3,10 @@
 namespace Lmc\ApiFilter\Applicator;
 
 use Lmc\ApiFilter\Entity\Filterable;
+use Lmc\ApiFilter\Filter\FilterFunction;
 use Lmc\ApiFilter\Filter\FilterIn;
 use Lmc\ApiFilter\Filter\FilterWithOperator;
+use Lmc\ApiFilter\Filter\FunctionParameter;
 
 class SqlApplicator extends AbstractApplicator
 {

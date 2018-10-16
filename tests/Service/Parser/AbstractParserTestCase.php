@@ -124,7 +124,7 @@ abstract class AbstractParserTestCase extends AbstractTestCase
      * @param mixed $rawValue
      *
      * @test
-     * @dataProvider provideSupportedColumnAndValue
+     * @dataProvider provideParseableColumnAndValue
      */
     public function shouldSupportColumnAndValue($rawColumn, $rawValue): void
     {
@@ -132,8 +132,6 @@ abstract class AbstractParserTestCase extends AbstractTestCase
 
         $this->assertTrue($result);
     }
-
-    abstract public function provideSupportedColumnAndValue(): array;
 
     /**
      * @param mixed $rawColumn
@@ -160,6 +158,13 @@ abstract class AbstractParserTestCase extends AbstractTestCase
      */
     public function shouldParseColumnAndValue($rawColumn, $rawValue, array $expected): void
     {
+        $result = $this->parseColumnAndValue($rawColumn, $rawValue);
+
+        $this->assertSame($expected, $result);
+    }
+
+    protected function parseColumnAndValue($rawColumn, $rawValue): array
+    {
         $result = [];
 
         /** @var DummyFilter $filter */
@@ -168,7 +173,7 @@ abstract class AbstractParserTestCase extends AbstractTestCase
             $result[] = $filter->toArray();
         }
 
-        $this->assertSame($expected, $result);
+        return $result;
     }
 
     abstract public function provideParseableColumnAndValue(): array;
@@ -176,48 +181,19 @@ abstract class AbstractParserTestCase extends AbstractTestCase
     /**
      * @test
      */
-    final public function shouldCoverSupportingOfAllCases(): void
+    final public function shouldCoverAllCases(): void
     {
-        $cases = $this->provideSupportedColumnAndValue() + $this->provideNotSupportedColumnAndValue();
-        $allCasesCount = count(self::CASES);
+        $cases = $this->provideParseableColumnAndValue() + $this->provideNotSupportedColumnAndValue();
 
-        $this->assertCount(
-            $allCasesCount,
-            $cases,
-            sprintf(
-                "There must be covered all cases in every parser test. You are missing %d:\n - %s",
-                $allCasesCount - count($cases),
-                implode("\n - ", $this->getMissingCases($cases))
-            )
-        );
-    }
-
-    private function getMissingCases(array $cases): array
-    {
-        $missing = [];
         foreach (self::CASES as $case) {
             [$caseKey] = array_keys($case);
-            if (!array_key_exists($caseKey, $cases)) {
-                $missing[] = $caseKey;
-            }
-        }
-
-        return $missing;
-    }
-
-    /**
-     * @test
-     */
-    final public function shouldCoverParsingAllSupportedCases(): void
-    {
-        $supported = $this->provideSupportedColumnAndValue();
-        $casesForParsing = $this->provideParseableColumnAndValue();
-
-        foreach (array_keys($supported) as $case) {
             $this->assertArrayHasKey(
-                $case,
-                $casesForParsing,
-                sprintf('Case "%s" is not covered in parse test.', $case)
+                $caseKey,
+                $cases,
+                sprintf(
+                    'Parser test must cover all cases. You are missing a case "%s".',
+                    $caseKey
+                )
             );
         }
     }

@@ -6,7 +6,9 @@ use Doctrine\ORM\QueryBuilder;
 use Lmc\ApiFilter\AbstractTestCase;
 use Lmc\ApiFilter\Entity\Filterable;
 use Lmc\ApiFilter\Entity\Value;
+use Lmc\ApiFilter\Filter\FilterFunction;
 use Lmc\ApiFilter\Filter\FilterWithOperator;
+use Lmc\ApiFilter\Filter\FunctionParameter;
 
 class QueryBuilderApplicatorTest extends AbstractTestCase
 {
@@ -70,5 +72,44 @@ class QueryBuilderApplicatorTest extends AbstractTestCase
         $result = $this->queryBuilderApplicator->getPreparedValue($filter);
 
         $this->assertSame(['col_eq' => [1, 2]], $result);
+    }
+
+    /**
+     * @test
+     */
+    public function shouldApplyFunction(): void
+    {
+        $filterable = new Filterable($this->queryBuilder);
+
+        $filter = new FilterFunction(
+            'fullName',
+            new Value(function ($filterable, FunctionParameter $firstName, FunctionParameter $surname) {
+                $filterable = $this->queryBuilderApplicator->applyFilterWithOperator(
+                    new FilterWithOperator($firstName->getColumn(), $firstName->getValue(), '=',
+                        $firstName->getTitle()),
+                    $filterable
+                );
+
+                $filterable = $this->queryBuilderApplicator->applyFilterWithOperator(
+                    new FilterWithOperator($surname->getColumn(), $surname->getValue(), '=', $surname->getTitle()),
+                    $filterable
+                );
+
+                return $filterable;
+            })
+        );
+        $parameters = [
+            new FunctionParameter('firstName', new Value('Jon')),
+            new FunctionParameter('surname', new Value('Snow')),
+        ];
+
+        $result = $this->queryBuilderApplicator->applyFilterFunction($filter, $filterable, $parameters);
+        $preparedValues = $this->queryBuilderApplicator->getPreparedValuesForFunction($parameters);
+
+        $this->assertDqlWhere(
+            ['t.firstName = :firstName_fun', 't.surname = :surname_fun'],
+            $result->getValue()
+        );
+        $this->assertSame(['firstName_fun' => 'Jon', 'surname_fun' => 'Snow'], $preparedValues);
     }
 }

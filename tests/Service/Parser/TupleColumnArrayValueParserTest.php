@@ -12,11 +12,6 @@ class TupleColumnArrayValueParserTest extends AbstractParserTestCase
         $this->parser = new TupleColumnArrayValueParser($this->mockFilterFactory());
     }
 
-    public function provideSupportedColumnAndValue(): array
-    {
-        return self::CASE_TUPLE_COLUMN_AND_ARRAY_VALUE;
-    }
-
     public function provideNotSupportedColumnAndValue(): array
     {
         return self::CASE_TUPLE_COLUMN_AND_TUPLE_VALUE

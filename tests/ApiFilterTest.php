@@ -10,6 +10,10 @@ use Lmc\ApiFilter\Exception\ApiFilterException;
 use Lmc\ApiFilter\Filter\FilterWithOperator;
 use Lmc\ApiFilter\Filters\Filters;
 
+/**
+ * For more test cases
+ * @see ApiFilterRegisterFunctionTest
+ */
 class ApiFilterTest extends AbstractTestCase
 {
     /** @var ApiFilter */
@@ -313,7 +317,7 @@ class ApiFilterTest extends AbstractTestCase
         $this->expectException(ApiFilterException::class);
         $this->expectExceptionMessage($expectedMessage);
 
-        $this->apiFilter->applyFilter($filter, $filterable);
+        $this->apiFilter->applyFilter($filter, $filterable, Filters::from([$filter]));
     }
 
     public function provideNotSupportedFilterable(): array

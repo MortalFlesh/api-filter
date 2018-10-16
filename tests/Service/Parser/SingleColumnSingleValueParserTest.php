@@ -12,11 +12,6 @@ class SingleColumnSingleValueParserTest extends AbstractParserTestCase
         $this->parser = new SingleColumnSingleValueParser($this->mockFilterFactory());
     }
 
-    public function provideSupportedColumnAndValue(): array
-    {
-        return self::CASE_SCALAR_COLUMN_AND_SCALAR_VALUE;
-    }
-
     public function provideNotSupportedColumnAndValue(): array
     {
         return self::CASE_TUPLE_COLUMN_AND_ARRAY_VALUE

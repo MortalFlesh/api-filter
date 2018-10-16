@@ -2,10 +2,13 @@
 
 namespace Lmc\ApiFilter\Filters;
 
+use Assert\Assertion;
 use Lmc\ApiFilter\Applicator\ApplicatorInterface;
 use Lmc\ApiFilter\Entity\Filterable;
+use Lmc\ApiFilter\Filter\FilterFunction;
 use Lmc\ApiFilter\Filter\FilterIn;
 use Lmc\ApiFilter\Filter\FilterInterface;
+use Lmc\ApiFilter\Filter\FunctionParameter;
 use Lmc\ApiFilter\Service\FilterApplicator;
 use MF\Collection\Immutable\Generic\IList;
 use MF\Collection\Immutable\Generic\ListCollection;
@@ -46,11 +49,13 @@ class Filters implements FiltersInterface
         yield from $this->filters;
     }
 
-    public function getPreparedValues(ApplicatorInterface $applicator): array
+    public function getPreparedValues(ApplicatorInterface $applicator, callable $findParametersForFunction): array
     {
         $preparedValues = [];
         foreach ($this->filters as $filter) {
-            $preparedValues += $applicator->getPreparedValue($filter);
+            $preparedValues += $filter instanceof FilterFunction
+                ? $applicator->getPreparedValuesForFunction($findParametersForFunction($filter))
+                : $applicator->getPreparedValue($filter);
         }
 
         return $preparedValues;
@@ -82,5 +87,30 @@ class Filters implements FiltersInterface
         return function (FilterInterface $item) use ($filter) {
             return $item instanceof FilterIn && $item->getColumn() === $filter->getColumn();
         };
+    }
+
+    public function filterByColumns(array $columns): FiltersInterface
+    {
+        $filtered = $this->filters->filter(function (FilterInterface $filter) use ($columns) {
+            return in_array($filter->getColumn(), $columns, true);
+        });
+
+        return self::from($filtered->toArray());
+    }
+
+    public function count(): int
+    {
+        return count($this->filters);
+    }
+
+    public function getFunctionParameter(string $parameter): FunctionParameter
+    {
+        $functionParameter = $this->filters->firstBy(function (FilterInterface $filter) use ($parameter) {
+            return $filter instanceof FunctionParameter && $filter->getColumn() === $parameter;
+        });
+
+        Assertion::notNull($functionParameter, sprintf('Function parameter "%s" is missing.', $parameter));
+
+        return $functionParameter;
     }
 }

@@ -14,16 +14,6 @@ class UnsupportedTupleCombinationParserTest extends AbstractParserTestCase
         $this->parser = new UnsupportedTupleCombinationParser(new FilterFactory());
     }
 
-    public function provideSupportedColumnAndValue(): array
-    {
-        return self::CASE_TUPLE_COLUMN_AND_TUPLE_VALUE
-            + self::CASE_SCALAR_COLUMN_AND_TUPLE_VALUE
-            + self::CASE_TUPLE_COLUMN_AND_SCALAR_VALUE
-            + self::CASE_TUPLE_COLUMN_AND_ARRAY_VALUE
-            + self::CASE_TUPLE_COLUMN_WITH_FILTER_AND_TUPLE_VALUE
-            + self::CASE_TUPLE_COLUMN_AND_TUPLE_VALUE_IMPLICIT_FILTERS;
-    }
-
     public function provideNotSupportedColumnAndValue(): array
     {
         return self::CASE_SCALAR_COLUMN_AND_SCALAR_VALUE
@@ -37,12 +27,13 @@ class UnsupportedTupleCombinationParserTest extends AbstractParserTestCase
      */
     public function shouldParseColumnAndValue($rawColumn, $rawValue, array $expected): void
     {
-        $this->markTestSkipped('This parser does NOT support any parsing combination.');
+        $this->expectException(\InvalidArgumentException::class);
+
+        parent::shouldParseColumnAndValue($rawColumn, $rawValue, $expected);
     }
 
     public function provideParseableColumnAndValue(): array
     {
-        // not a single column and value is parseable
         return self::CASE_TUPLE_COLUMN_AND_TUPLE_VALUE
             + self::CASE_SCALAR_COLUMN_AND_TUPLE_VALUE
             + self::CASE_TUPLE_COLUMN_AND_SCALAR_VALUE

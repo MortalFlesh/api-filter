@@ -5,8 +5,8 @@ namespace Lmc\ApiFilter;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Query\Expr\Andx;
 use Doctrine\ORM\QueryBuilder;
-use Mockery\Adapter\Phpunit\MockeryPHPUnitIntegration;
 use Mockery as m;
+use Mockery\Adapter\Phpunit\MockeryPHPUnitIntegration;
 use PHPUnit\Framework\TestCase;
 
 abstract class AbstractTestCase extends TestCase
@@ -31,5 +31,12 @@ abstract class AbstractTestCase extends TestCase
         } else {
             $this->assertSame($expectedDqlWhere, $where->getParts());
         }
+    }
+
+    protected function createBlankCallback(string $name): callable
+    {
+        return function () use ($name) {
+            throw new \Exception(sprintf('Function "%s" is not meant to be called.', $name));
+        };
     }
 }
