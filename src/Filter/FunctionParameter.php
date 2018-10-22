@@ -8,8 +8,8 @@ class FunctionParameter extends AbstractFilter
 {
     public const TITLE = 'fun';
 
-    public function __construct(string $column, Value $value)
+    public function __construct(string $column, Value $value, ?string $title = null)
     {
-        parent::__construct(self::TITLE, $column, $value);
+        parent::__construct($title ?? self::TITLE, $column, $value);
     }
 }

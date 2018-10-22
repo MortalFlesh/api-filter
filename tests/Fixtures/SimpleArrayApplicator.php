@@ -4,6 +4,7 @@ namespace Lmc\ApiFilter\Fixtures;
 
 use Lmc\ApiFilter\Applicator\ApplicatorInterface;
 use Lmc\ApiFilter\Entity\Filterable;
+use Lmc\ApiFilter\Entity\Parameter;
 use Lmc\ApiFilter\Filter\FilterFunction;
 use Lmc\ApiFilter\Filter\FilterIn;
 use Lmc\ApiFilter\Filter\FilterInterface;
@@ -117,8 +118,9 @@ class SimpleArrayApplicator implements ApplicatorInterface
      * @see applyFilterFunction()
      *
      * @param FunctionParameter[] $parameters
+     * @param Parameter[] $parametersDefinitions
      */
-    public function getPreparedValuesForFunction(array $parameters): array
+    public function getPreparedValuesForFunction(array $parameters, array $parametersDefinitions = []): array
     {
         throw new \Exception(sprintf('Method %s is not implemented yet.', __METHOD__));
     }

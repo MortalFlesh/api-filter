@@ -4,6 +4,7 @@ namespace Lmc\ApiFilter\Service;
 
 use Assert\Assertion;
 use Lmc\ApiFilter\Entity\Filterable;
+use Lmc\ApiFilter\Entity\Parameter;
 use Lmc\ApiFilter\Filter\FilterInterface;
 use Lmc\ApiFilter\Filters\FiltersInterface;
 use MF\Collection\Mutable\Generic\IMap;
@@ -15,20 +16,48 @@ class Functions
     private $functions;
     /** @var IMap<string,array>|array[] */
     private $functionParameters;
+    /** @var IMap<string,array>|Parameter[] */
+    private $parameterDefinitions;
+    /** @var array */
+    private $registeredParameters;
 
     public function __construct()
     {
         $this->functions = new Map('string', 'callable');
         $this->functionParameters = new Map('string', 'array');
+        $this->parameterDefinitions = new Map('string', 'array');
+        $this->registeredParameters = [];
     }
 
-    public function register(string $functionName, array $parameters, callable $function): void
-    {
+    public function register(
+        string $functionName,
+        array $parameters,
+        callable $function,
+        array $parameterDefinitions = []
+    ): void {
         Assertion::notEmpty($functionName, 'Function name must be defined.');
         Assertion::notEmpty($parameters, sprintf('Function "%s" must have some parameters.', $functionName));
+        $this->assertUniqueParameters($functionName, $parameters);
 
         $this->functions[$functionName] = $function;
         $this->functionParameters[$functionName] = $parameters;
+        $this->parameterDefinitions[$functionName] = $parameterDefinitions;
+    }
+
+    protected function assertUniqueParameters(string $functionName, array $parameters): void
+    {
+        foreach ($parameters as $parameter) {
+            Assertion::keyNotExists(
+                $this->registeredParameters,
+                $parameter,
+                sprintf(
+                    'There is already a function "%s" with parameter "%s" registered. Parameters must be unique.',
+                    $this->registeredParameters[$parameter] ?? '-', // this is because of eager evaluation of sprintf
+                    $parameter
+                )
+            );
+            $this->registeredParameters[$parameter] = $functionName;
+        }
     }
 
     /** @param FiltersInterface|FilterInterface[] $filters */
@@ -39,13 +68,6 @@ class Functions
         $parameters = $this->functionParameters[$functionName];
 
         $functionParameters = $filters->filterByColumns($parameters);
-        var_dump([
-            'function' => $functionName,
-            'parameters' => $parameters,
-            'filters for params' => iterator_to_array($functionParameters),
-        ]);
-
-        // todo - parser must be implemented before this
         $this->assertFiltersByParameters($parameters, $functionParameters);
 
         $applied = $function($filterable->getValue(), ...$functionParameters);
@@ -105,6 +127,13 @@ class Functions
         return $array;
     }
 
+    public function getFunction(string $functionName): callable
+    {
+        $this->assertRegistered($functionName);
+
+        return $this->functions[$functionName];
+    }
+
     public function getParametersFor(string $functionName): array
     {
         $this->assertRegistered($functionName);
@@ -112,10 +141,11 @@ class Functions
         return $this->functionParameters[$functionName];
     }
 
-    public function getFunction(string $functionName): callable
+    /** @return Parameter[] */
+    public function getParameterDefinitionsFor(string $functionName): array
     {
         $this->assertRegistered($functionName);
 
-        return $this->functions[$functionName];
+        return $this->parameterDefinitions[$functionName];
     }
 }

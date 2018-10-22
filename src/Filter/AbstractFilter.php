@@ -13,6 +13,8 @@ abstract class AbstractFilter implements FilterInterface
     private $column;
     /** @var Value */
     private $value;
+    /** @var ?string */
+    private $fullTitle;
 
     public function __construct(string $title, string $column, Value $value)
     {
@@ -24,7 +26,9 @@ abstract class AbstractFilter implements FilterInterface
 
     public function getTitle(): string
     {
-        return $this->title;
+        return $this->fullTitle !== null
+            ? $this->fullTitle
+            : implode('_', [$this->getColumn(), $this->title]);
     }
 
     public function getColumn(): string
@@ -40,5 +44,10 @@ abstract class AbstractFilter implements FilterInterface
     protected function setValue(Value $value): void
     {
         $this->value = $value;
+    }
+
+    public function setFullTitle(string $title): void
+    {
+        $this->fullTitle = $title;
     }
 }

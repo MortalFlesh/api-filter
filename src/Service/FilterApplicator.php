@@ -88,7 +88,10 @@ class FilterApplicator
         $applicator = $this->findApplicatorFor($filterable);
 
         return $filter instanceof FilterFunction
-            ? $applicator->getPreparedValuesForFunction($this->getParametersForFunction($filter))
+            ? $applicator->getPreparedValuesForFunction(
+                $this->getParametersForFunction($filter),
+                $this->functions->getParameterDefinitionsFor($filter->getColumn())
+            )
             : $applicator->getPreparedValue($filter);
     }
 
@@ -103,6 +106,9 @@ class FilterApplicator
             $this->findApplicatorFor($filterable),
             function (FilterFunction $filterFunction) {
                 return $this->getParametersForFunction($filterFunction);
+            },
+            function (FilterFunction $filterFunction) {
+                return $this->functions->getParameterDefinitionsFor($filterFunction->getColumn());
             }
         );
     }

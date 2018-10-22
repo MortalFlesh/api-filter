@@ -16,7 +16,7 @@ class FilterWithOperatorTest extends AbstractTestCase
 
         $title = $filter->getTitle();
 
-        $this->assertSame('eq', $title);
+        $this->assertSame('column_eq', $title);
     }
 
     /**

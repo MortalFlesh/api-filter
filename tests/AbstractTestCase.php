@@ -5,8 +5,8 @@ namespace Lmc\ApiFilter;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Query\Expr\Andx;
 use Doctrine\ORM\QueryBuilder;
-use Mockery as m;
 use Mockery\Adapter\Phpunit\MockeryPHPUnitIntegration;
+use Mockery as m;
 use PHPUnit\Framework\TestCase;
 
 abstract class AbstractTestCase extends TestCase
@@ -29,13 +29,29 @@ abstract class AbstractTestCase extends TestCase
         if ($expectedDqlWhere === null) {
             $this->assertNull($where);
         } else {
-            $this->assertSame($expectedDqlWhere, $where->getParts());
+            $this->assertSameValues($expectedDqlWhere, $where->getParts());
         }
+    }
+
+    protected function assertSameValues(array $expected, array $actual): void
+    {
+        if (!empty($expected)) {
+            [$key] = array_keys($expected);
+            if (is_int($key)) {
+                sort($expected);
+                sort($actual);
+            } else {
+                asort($expected);
+                asort($actual);
+            }
+        }
+
+        $this->assertSame($expected, $actual);
     }
 
     protected function createBlankCallback(string $name): callable
     {
-        return function () use ($name) {
+        return function () use ($name): void {
             throw new \Exception(sprintf('Function "%s" is not meant to be called.', $name));
         };
     }

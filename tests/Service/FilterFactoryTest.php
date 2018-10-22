@@ -10,6 +10,8 @@ use Lmc\ApiFilter\Filter\FilterWithOperator;
 
 class FilterFactoryTest extends AbstractTestCase
 {
+    private const COLUMN = 'column';
+
     /** @var FilterFactory */
     private $filterFactory;
 
@@ -19,8 +21,8 @@ class FilterFactoryTest extends AbstractTestCase
     }
 
     /**
-     * @param mixed $rawValue
-     * @param mixed $expectedValue
+     * @param mixed $rawValue of type <T>
+     * @param mixed $expectedValue of type <T>
      *
      * @test
      * @dataProvider provideFilters
@@ -32,12 +34,10 @@ class FilterFactoryTest extends AbstractTestCase
         $expectedValue,
         string $expectedFilterClass
     ): void {
-        $column = 'column';
-
-        $result = $this->filterFactory->createFilter($column, $filter, new Value($rawValue));
+        $result = $this->filterFactory->createFilter(self::COLUMN, $filter, new Value($rawValue));
 
         $this->assertInstanceOf(FilterInterface::class, $result);
-        $this->assertSame($column, $result->getColumn());
+        $this->assertSame(self::COLUMN, $result->getColumn());
         $this->assertSame($expectedValue, $result->getValue()->getValue());
         $this->assertSame($expectedTitle, $result->getTitle());
         $this->assertInstanceOf($expectedFilterClass, $result);
@@ -46,20 +46,20 @@ class FilterFactoryTest extends AbstractTestCase
     public function provideFilters(): array
     {
         return [
-            // filter, expectedTitle, expectedFilterClass
-            'eq' => ['eq', 'eq', 'value', 'value', FilterWithOperator::class],
-            'gt' => ['gt', 'gt', 'value', 'value', FilterWithOperator::class],
-            'gte' => ['gte', 'gte', 'value', 'value', FilterWithOperator::class],
-            'lt' => ['lt', 'lt', 'value', 'value', FilterWithOperator::class],
-            'lte' => ['lte', 'lte', 'value', 'value', FilterWithOperator::class],
-            'in' => ['in', 'in', 'value', ['value'], FilterIn::class],
+            // filter, expectedTitle, rawValue, expectedValue, expectedFilterClass
+            'eq' => ['eq', self::COLUMN . '_eq', 'value', 'value', FilterWithOperator::class],
+            'gt' => ['gt', self::COLUMN . '_gt', 'value', 'value', FilterWithOperator::class],
+            'gte' => ['gte', self::COLUMN . '_gte', 'value', 'value', FilterWithOperator::class],
+            'lt' => ['lt', self::COLUMN . '_lt', 'value', 'value', FilterWithOperator::class],
+            'lte' => ['lte', self::COLUMN . '_lte', 'value', 'value', FilterWithOperator::class],
+            'in' => ['in', self::COLUMN . '_in', 'value', ['value'], FilterIn::class],
             // by upper case filter
-            'eq - upper case' => ['EQ', 'eq', 'value', 'value', FilterWithOperator::class],
-            'gt - upper case' => ['GT', 'gt', 'value', 'value', FilterWithOperator::class],
-            'gte - upper case' => ['GTE', 'gte', 'value', 'value', FilterWithOperator::class],
-            'lt - upper case' => ['LT', 'lt', 'value', 'value', FilterWithOperator::class],
-            'lte - upper case' => ['LTE', 'lte', 'value', 'value', FilterWithOperator::class],
-            'in - upper case' => ['IN', 'in', 'value', ['value'], FilterIn::class],
+            'eq - upper case' => ['EQ', self::COLUMN . '_eq', 'value', 'value', FilterWithOperator::class],
+            'gt - upper case' => ['GT', self::COLUMN . '_gt', 'value', 'value', FilterWithOperator::class],
+            'gte - upper case' => ['GTE', self::COLUMN . '_gte', 'value', 'value', FilterWithOperator::class],
+            'lt - upper case' => ['LT', self::COLUMN . '_lt', 'value', 'value', FilterWithOperator::class],
+            'lte - upper case' => ['LTE', self::COLUMN . '_lte', 'value', 'value', FilterWithOperator::class],
+            'in - upper case' => ['IN', self::COLUMN . '_in', 'value', ['value'], FilterIn::class],
         ];
     }
 
@@ -71,6 +71,6 @@ class FilterFactoryTest extends AbstractTestCase
         $this->expectException(\InvalidArgumentException::class);
         $this->expectExceptionMessage('Filter "unknown" is not implemented. For column "column" with value "foo".');
 
-        $this->filterFactory->createFilter('column', 'unknown', new Value('foo'));
+        $this->filterFactory->createFilter(self::COLUMN, 'unknown', new Value('foo'));
     }
 }

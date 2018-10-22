@@ -8,6 +8,7 @@ use Lmc\ApiFilter\AbstractTestCase;
 use Lmc\ApiFilter\Applicator\ApplicatorInterface;
 use Lmc\ApiFilter\Applicator\QueryBuilderApplicator;
 use Lmc\ApiFilter\Applicator\SqlApplicator;
+use Lmc\ApiFilter\Constant\Filter;
 use Lmc\ApiFilter\Entity\Filterable;
 use Lmc\ApiFilter\Entity\Value;
 use Lmc\ApiFilter\Filter\FilterFunction;
@@ -70,22 +71,23 @@ class FilterApplicatorTest extends AbstractTestCase
 
         $fullName = function (ApplicatorInterface $applicator) {
             return function ($filterable, FunctionParameter $firstName, FunctionParameter $surname) use ($applicator) {
+                $filterable = new Filterable($filterable);
                 $filterable = $applicator->applyFilterWithOperator(
                     new FilterWithOperator(
                         $firstName->getColumn(),
                         $firstName->getValue(),
                         '=',
-                        $firstName->getTitle()
+                        'fun'
                     ),
                     $filterable
                 );
 
                 $filterable = $applicator->applyFilterWithOperator(
-                    new FilterWithOperator($surname->getColumn(), $surname->getValue(), '=', $surname->getTitle()),
+                    new FilterWithOperator($surname->getColumn(), $surname->getValue(), '=', 'fun'),
                     $filterable
                 );
 
-                return $filterable;
+                return $filterable->getValue();
             };
         };
 
@@ -217,22 +219,23 @@ class FilterApplicatorTest extends AbstractTestCase
 
         $fullName = function (ApplicatorInterface $applicator) {
             return function ($filterable, FunctionParameter $firstName, FunctionParameter $surname) use ($applicator) {
+                $filterable = new Filterable($filterable);
                 $filterable = $applicator->applyFilterWithOperator(
                     new FilterWithOperator(
                         $firstName->getColumn(),
                         $firstName->getValue(),
                         '=',
-                        $firstName->getTitle()
+                        'fun'
                     ),
                     $filterable
                 );
 
                 $filterable = $applicator->applyFilterWithOperator(
-                    new FilterWithOperator($surname->getColumn(), $surname->getValue(), '=', $surname->getTitle()),
+                    new FilterWithOperator($surname->getColumn(), $surname->getValue(), '=', 'fun'),
                     $filterable
                 );
 
-                return $filterable;
+                return $filterable->getValue();
             };
         };
 

@@ -18,12 +18,19 @@ interface FiltersInterface extends IEnumerable
 
     /**
      * @param callable $findParametersForFunction (FilterFunction): FunctionParameter[]
+     * @param callable $findParameterDefinitions (FilterFunction): Parameter[]
      */
-    public function getPreparedValues(ApplicatorInterface $applicator, callable $findParametersForFunction): array;
+    public function getPreparedValues(
+        ApplicatorInterface $applicator,
+        callable $findParametersForFunction,
+        callable $findParameterDefinitions
+    ): array;
 
     public function addFilter(FilterInterface $filter): self;
 
     public function filterByColumns(array $columns): self;
 
     public function getFunctionParameter(string $parameter): FunctionParameter;
+
+    public function dump(): array;
 }

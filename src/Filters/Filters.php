@@ -49,12 +49,18 @@ class Filters implements FiltersInterface
         yield from $this->filters;
     }
 
-    public function getPreparedValues(ApplicatorInterface $applicator, callable $findParametersForFunction): array
-    {
+    public function getPreparedValues(
+        ApplicatorInterface $applicator,
+        callable $findParametersForFunction,
+        callable $findParameterDefinitions
+    ): array {
         $preparedValues = [];
         foreach ($this->filters as $filter) {
             $preparedValues += $filter instanceof FilterFunction
-                ? $applicator->getPreparedValuesForFunction($findParametersForFunction($filter))
+                ? $applicator->getPreparedValuesForFunction(
+                    $findParametersForFunction($filter),
+                    $findParameterDefinitions($filter)
+                )
                 : $applicator->getPreparedValue($filter);
         }
 
@@ -112,5 +118,10 @@ class Filters implements FiltersInterface
         Assertion::notNull($functionParameter, sprintf('Function parameter "%s" is missing.', $parameter));
 
         return $functionParameter;
+    }
+
+    public function dump(): array
+    {
+        return $this->filters->toArray();
     }
 }

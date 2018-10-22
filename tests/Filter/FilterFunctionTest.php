@@ -14,7 +14,7 @@ class FilterFunctionTest extends AbstractTestCase
     {
         $filterFunction = new FilterFunction('fullName', new Value($this->createBlankCallback('fullName')));
 
-        $this->assertSame('fun', $filterFunction->getTitle());
+        $this->assertSame('fullName_fun', $filterFunction->getTitle());
     }
 
     /**
@@ -31,7 +31,7 @@ class FilterFunctionTest extends AbstractTestCase
         );
 
         $this->assertSame('fooFunction', $filterFunction->getColumn());
-        $this->assertSame('foo', $filterFunction->getTitle());
+        $this->assertSame('fooFunction_foo', $filterFunction->getTitle());
         $this->assertSame('fooBar', $filterFunction->getValue()->getValue()());
     }
 

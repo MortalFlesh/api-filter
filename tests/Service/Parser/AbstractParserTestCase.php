@@ -120,8 +120,8 @@ abstract class AbstractParserTestCase extends AbstractTestCase
     }
 
     /**
-     * @param mixed $rawColumn
-     * @param mixed $rawValue
+     * @param mixed $rawColumn Column from query parameters
+     * @param mixed $rawValue Value from query parameters
      *
      * @test
      * @dataProvider provideParseableColumnAndValue
@@ -134,8 +134,8 @@ abstract class AbstractParserTestCase extends AbstractTestCase
     }
 
     /**
-     * @param mixed $rawColumn
-     * @param mixed $rawValue
+     * @param mixed $rawColumn Column from query parameters
+     * @param mixed $rawValue Value from query parameters
      *
      * @test
      * @dataProvider provideNotSupportedColumnAndValue
@@ -150,8 +150,8 @@ abstract class AbstractParserTestCase extends AbstractTestCase
     abstract public function provideNotSupportedColumnAndValue(): array;
 
     /**
-     * @param mixed $rawColumn
-     * @param mixed $rawValue
+     * @param mixed $rawColumn Column from query parameters
+     * @param mixed $rawValue Value from query parameters
      *
      * @test
      * @dataProvider provideParseableColumnAndValue

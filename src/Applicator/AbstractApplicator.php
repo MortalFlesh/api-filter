@@ -3,6 +3,7 @@
 namespace Lmc\ApiFilter\Applicator;
 
 use Lmc\ApiFilter\Entity\Filterable;
+use Lmc\ApiFilter\Entity\Parameter;
 use Lmc\ApiFilter\Filter\FilterFunction;
 use Lmc\ApiFilter\Filter\FilterInterface;
 use Lmc\ApiFilter\Filter\FunctionParameter;
@@ -31,7 +32,7 @@ abstract class AbstractApplicator implements ApplicatorInterface
 
     private function createColumnPlaceholder(string $prefix, FilterInterface $filter, string $additional = null): string
     {
-        $pieces = [$filter->getColumn(), $filter->getTitle()];
+        $pieces = [$filter->getTitle()];
 
         if ($additional !== null) {
             $pieces[] = $additional;
@@ -96,7 +97,10 @@ abstract class AbstractApplicator implements ApplicatorInterface
      */
     public function applyFilterFunction(FilterFunction $filter, Filterable $filterable, array $parameters): Filterable
     {
-        return $filter->getValue()->getValue()($filterable, ...$parameters);
+        $function = $filter->getValue()->getValue();
+        $appliedFilterable = $function($filterable->getValue(), ...$parameters);
+
+        return new Filterable($appliedFilterable);
     }
 
     /**
@@ -106,8 +110,19 @@ abstract class AbstractApplicator implements ApplicatorInterface
      * @see applyFilterFunction()
      *
      * @param FunctionParameter[] $parameters
+     * @param Parameter[] $parametersDefinitions
      */
-    public function getPreparedValuesForFunction(array $parameters): array
+    public function getPreparedValuesForFunction(array $parameters, array $parametersDefinitions = []): array
+    {
+        return empty($parametersDefinitions)
+            ? $this->getPreparedValuesByParameters($parameters)
+            : $this->getPreparedValuesByDefinitions($parameters, $parametersDefinitions);
+    }
+
+    /**
+     * @param FunctionParameter[] $parameters
+     */
+    private function getPreparedValuesByParameters(array $parameters): array
     {
         $preparedValues = [];
         foreach ($parameters as $parameter) {
@@ -115,5 +130,36 @@ abstract class AbstractApplicator implements ApplicatorInterface
         }
 
         return $preparedValues;
+    }
+
+    /**
+     * @param FunctionParameter[] $parameters
+     * @param Parameter[] $parametersDefinitions
+     */
+    private function getPreparedValuesByDefinitions(array $parameters, array $parametersDefinitions): array
+    {
+        $preparedValues = [];
+        $parametersByColumns = $this->getParametersByColumns($parameters);
+
+        foreach ($parametersDefinitions as $definition) {
+            $preparedValues += $definition->hasDefaultValue()
+                ? [$definition->getTitleForDefaultValue() => $definition->getDefaultValue()->getValue()]
+                : $this->getPreparedSingleValue($parametersByColumns[$definition->getName()]);
+        }
+
+        return $preparedValues;
+    }
+
+    /**
+     * @param FunctionParameter[] $parameters
+     */
+    private function getParametersByColumns(array $parameters): array
+    {
+        $parametersByColumns = [];
+        foreach ($parameters as $parameter) {
+            $parametersByColumns[$parameter->getColumn()] = $parameter;
+        }
+
+        return $parametersByColumns;
     }
 }

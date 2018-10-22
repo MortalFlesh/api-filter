@@ -84,18 +84,23 @@ class QueryBuilderApplicatorTest extends AbstractTestCase
         $filter = new FilterFunction(
             'fullName',
             new Value(function ($filterable, FunctionParameter $firstName, FunctionParameter $surname) {
+                $filterable = new Filterable($filterable);
                 $filterable = $this->queryBuilderApplicator->applyFilterWithOperator(
-                    new FilterWithOperator($firstName->getColumn(), $firstName->getValue(), '=',
-                        $firstName->getTitle()),
+                    new FilterWithOperator(
+                        $firstName->getColumn(),
+                        $firstName->getValue(),
+                        '=',
+                        'fun'
+                    ),
                     $filterable
                 );
 
                 $filterable = $this->queryBuilderApplicator->applyFilterWithOperator(
-                    new FilterWithOperator($surname->getColumn(), $surname->getValue(), '=', $surname->getTitle()),
+                    new FilterWithOperator($surname->getColumn(), $surname->getValue(), '=', 'fun'),
                     $filterable
                 );
 
-                return $filterable;
+                return $filterable->getValue();
             })
         );
         $parameters = [

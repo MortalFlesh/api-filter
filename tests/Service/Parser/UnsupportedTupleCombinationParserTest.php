@@ -43,8 +43,8 @@ class UnsupportedTupleCombinationParserTest extends AbstractParserTestCase
     }
 
     /**
-     * @param mixed $rawColumn
-     * @param mixed $rawValue
+     * @param mixed $rawColumn Column from query parameters
+     * @param mixed $rawValue Value from query parameters
      *
      * @test
      * @dataProvider provideUnsupportedColumnAndValue

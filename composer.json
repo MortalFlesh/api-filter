@@ -26,6 +26,7 @@
         "lmc/coding-standard": "^1.1",
         "mockery/mockery": "^1.1",
         "php-coveralls/php-coveralls": "^2.1",
+        "phpstan/phpstan-beberlei-assert": "^0.10.0",
         "phpstan/phpstan-shim": "^0.10",
         "phpunit/phpunit": "^7.0"
     },

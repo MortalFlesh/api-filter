@@ -6,6 +6,8 @@ use Lmc\ApiFilter\Service\Functions;
 
 class FunctionParserTest extends AbstractParserTestCase
 {
+    /** @var FunctionParser */
+    protected $parser;
     /** @var Functions */
     private $functions;
 
@@ -21,24 +23,25 @@ class FunctionParserTest extends AbstractParserTestCase
             ['ageFrom', 'ageTo', 'size'],
             $this->createBlankCallback('perfectWife')
         );
+        $this->functions->register('sql', ['query'], $this->createBlankCallback('sql'));
     }
 
     /**
-     * @param mixed $rawColumn
-     * @param mixed $rawValue
+     * @param mixed $rawColumn Column from query parameters
+     * @param mixed $rawValue Value from query parameters
      *
      * @test
      * @dataProvider provideParseableColumnAndValue
      */
     public function shouldSupportColumnAndValue($rawColumn, $rawValue): void
     {
-        $this->parser->setQueryParameters([$rawColumn, $rawValue]);
+        $this->parser->setQueryParameters([$rawColumn => $rawValue]);
         parent::shouldSupportColumnAndValue($rawColumn, $rawValue);
     }
 
     /**
-     * @param mixed $rawColumn
-     * @param mixed $rawValue
+     * @param mixed $rawColumn Column from query parameters
+     * @param mixed $rawValue Value from query parameters
      *
      * @test
      * @dataProvider provideNotSupportedColumnAndValue
@@ -63,8 +66,8 @@ class FunctionParserTest extends AbstractParserTestCase
     }
 
     /**
-     * @param mixed $rawColumn
-     * @param mixed $rawValue
+     * @param mixed $rawColumn Column from query parameters
+     * @param mixed $rawValue Value from query parameters
      *
      * @test
      * @dataProvider provideParseableColumnAndValue
@@ -78,6 +81,7 @@ class FunctionParserTest extends AbstractParserTestCase
     public function provideParseableColumnAndValue(): array
     {
         return [
+            // rawColumn, rawValue, expectedFilters
             'scalar column + tuple value - fullName' => [
                 'fullName',
                 '(Jon,Snow)',
@@ -114,6 +118,30 @@ class FunctionParserTest extends AbstractParserTestCase
                     ['ageFrom', 'function-parameter', 18],
                     ['ageTo', 'function-parameter', 30],
                     ['size', 'function-parameter', ['DD', 'D']],
+                ],
+            ],
+            'scalar column + scalar value - sql' => [
+                'sql',
+                'SELECT * FROM table',
+                [
+                    ['sql', 'function', 'callable'],
+                    ['query', 'function-parameter', 'SELECT * FROM table'],
+                ],
+            ],
+            'scalar column + scalar value - implicit sql' => [
+                'query',
+                'SELECT * FROM table',
+                [
+                    ['sql', 'function', 'callable'],
+                    ['query', 'function-parameter', 'SELECT * FROM table'],
+                ],
+            ],
+            'tuple column + tuple value - explicit sql by tuple' => [
+                '(fun,query)',
+                '(sql, "SELECT * FROM table")',
+                [
+                    ['sql', 'function', 'callable'],
+                    ['query', 'function-parameter', 'SELECT * FROM table'],
                 ],
             ],
         ];
@@ -168,7 +196,7 @@ class FunctionParserTest extends AbstractParserTestCase
         $result = [];
 
         foreach ($queryParameters as $column => $value) {
-            foreach($this->parseColumnAndValue($column, $value) as $item) {
+            foreach ($this->parseColumnAndValue($column, $value) as $item) {
                 $result[] = $item;
             }
         }
@@ -291,6 +319,34 @@ class FunctionParserTest extends AbstractParserTestCase
                     ['size', 'function-parameter', ['DD', 'D']],
                 ],
             ],
+            'sql by single value' => [
+                ['sql' => 'SELECT * FROM table'],
+                [
+                    ['sql', 'function', 'callable'],
+                    ['query', 'function-parameter', 'SELECT * FROM table'],
+                ],
+            ],
+            'explicit sql by tuple' => [
+                ['(fun,query)' => '(sql, "SELECT * FROM table")'],
+                [
+                    ['sql', 'function', 'callable'],
+                    ['query', 'function-parameter', 'SELECT * FROM table'],
+                ],
+            ],
+            'explicit sql by values' => [
+                ['fun' => ['sql'], 'query' => 'SELECT * FROM table'],
+                [
+                    ['sql', 'function', 'callable'],
+                    ['query', 'function-parameter', 'SELECT * FROM table'],
+                ],
+            ],
+            'implicit sql by value' => [
+                ['query' => 'SELECT * FROM table'],
+                [
+                    ['sql', 'function', 'callable'],
+                    ['query', 'function-parameter', 'SELECT * FROM table'],
+                ],
+            ],
         ];
     }
 
@@ -334,8 +390,11 @@ class FunctionParserTest extends AbstractParserTestCase
         $this->expectExceptionMessage('Direct function definition must have a tuple value.');
 
         foreach ($this->parser->parse($column, $value) as $filter) {
-            $this->fail('This should not be reached');
+            // just iterate through
+            continue;
         }
+
+        $this->fail('This should not be reached');
     }
 
     /**
@@ -354,8 +413,11 @@ class FunctionParserTest extends AbstractParserTestCase
         $this->expectExceptionMessage('Direct function definition must have a tuple value.');
 
         foreach ($this->parser->parse($column, $value) as $filter) {
-            $this->fail('This should not be reached');
+            // just iterate through
+            continue;
         }
+
+        $this->fail('This should not be reached');
     }
 
     /**
@@ -382,7 +444,8 @@ class FunctionParserTest extends AbstractParserTestCase
 
         foreach ($queryParameters as $column => $value) {
             foreach ($this->parser->parse($column, $value) as $filter) {
-                // ignore
+                // just iterate through
+                continue;
             }
         }
     }
@@ -409,5 +472,16 @@ class FunctionParserTest extends AbstractParserTestCase
                 $this->fail('This should not be reached.');
             }
         }
+    }
+
+    /**
+     * @test
+     */
+    public function shouldParseImplicitFunctionWhereThereIsNotOnlyOneOption(): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('There is already a function "sql" with parameter "query" registered. Parameters must be unique.');
+
+        $this->functions->register('sql2', ['query'], $this->createBlankCallback('sql2'));
     }
 }

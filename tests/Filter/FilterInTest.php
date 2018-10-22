@@ -14,7 +14,7 @@ class FilterInTest extends AbstractTestCase
     {
         $filterIn = new FilterIn('col', new Value([1, 2, 3]));
 
-        $this->assertSame('in', $filterIn->getTitle());
+        $this->assertSame('col_in', $filterIn->getTitle());
     }
 
     /**

@@ -8,11 +8,10 @@ use Lmc\ApiFilter\Constant\Priority;
 use Lmc\ApiFilter\Entity\Filterable;
 use Lmc\ApiFilter\Exception\ApiFilterException;
 use Lmc\ApiFilter\Filter\FilterInterface;
-use Lmc\ApiFilter\Filter\FunctionParameter;
-use Lmc\ApiFilter\Filters\Filters;
 use Lmc\ApiFilter\Filters\FiltersInterface;
 use Lmc\ApiFilter\Service\FilterApplicator;
 use Lmc\ApiFilter\Service\FilterFactory;
+use Lmc\ApiFilter\Service\FunctionCreator;
 use Lmc\ApiFilter\Service\Functions;
 use Lmc\ApiFilter\Service\QueryParametersParser;
 use MF\Collection\Immutable\ITuple;
@@ -26,12 +25,16 @@ class ApiFilter
     private $parser;
     /** @var FilterApplicator */
     private $applicator;
+    /** @var FunctionCreator */
+    private $functionCreator;
 
     public function __construct()
     {
+        $filterFactory = new FilterFactory();
         $this->functions = new Functions();
-        $this->parser = new QueryParametersParser(new FilterFactory(), $this->functions);
+        $this->parser = new QueryParametersParser($filterFactory, $this->functions);
         $this->applicator = new FilterApplicator($this->functions);
+        $this->functionCreator = new FunctionCreator($filterFactory);
 
         if (class_exists('Doctrine\ORM\QueryBuilder')) {
             $this->registerApplicator(new QueryBuilderApplicator(), Priority::MEDIUM);
@@ -219,8 +222,12 @@ class ApiFilter
      * @see ApiFilter::registerFunction()
      * @see ApiFilter::executeFunction()
      *
+     * Parameters might be defined as
+     * - array of single values (names)
+     * - array of array values (definitions)
+     * - array of Parameter (definitions)
+     *
      * @param array $parameters names of needed parameters (parameters will be passed to function in given order)
-     * @param callable $function (Filterable<T> $filterable, FunctionParameter ...$parameters): Filterable<T>
      * @throws ApiFilterException
      */
     public function declareFunction(string $functionName, array $parameters)
@@ -228,13 +235,10 @@ class ApiFilter
         try {
             $this->functions->register(
                 $functionName,
-                $parameters,
-                function ($filterable, FunctionParameter ...$parameters) {
-                    return $this->applicator->applyAll(
-                        Filters::from([$parameters]),
-                        new Filterable($filterable)
-                    )->getValue();
-                }
+                // todo - normalize first and then pass as IMap to following methods
+                $this->functionCreator->getParameterNames($parameters),
+                $this->functionCreator->createByParameters($this->applicator, $parameters),
+                $this->functionCreator->getParameterDefinitions($parameters)
             );
 
             return $this;
@@ -292,8 +296,8 @@ class ApiFilter
     }
 
     /**
-     * Simplified method for execute a function with parsed query parameters without any implicit application
-     * This allows you to bypass any applicator or not to implement one
+     * Execute a function with parsed query parameters but without any implicit application
+     * This allows you to bypass any applicator or not to implement one if you need to
      *
      * It will just parse filters and call a registered function with parsed filters
      *
@@ -301,7 +305,9 @@ class ApiFilter
      * Executing a function, which bypasses ApiFilter and directly calls elastic search (see example of registerFunction)
      * $resultFromElastic = $apiFilter->executeFunction('elastic', $request->query->all(), null);
      *
+     * @see ApiFilter::declareFunction()
      * @see ApiFilter::registerFunction()
+     * @see ApiFilter::applyFunction() if you want apply function with applicators and get prepared values as well
      *
      * @param mixed $filterable of type <T> - this might not be supported by any applicator (if you don't use apply methods of ApiFilter)
      * @throws ApiFilterException
@@ -310,8 +316,11 @@ class ApiFilter
     public function executeFunction(string $functionName, array $queryParameters, $filterable)
     {
         try {
+            $filters = $this->parser->parse($queryParameters);
+            $this->applicator->setFilters($filters);
+
             return $this->functions
-                ->execute($functionName, $this->parser->parse($queryParameters), new Filterable($filterable))
+                ->execute($functionName, $filters, new Filterable($filterable))
                 ->getValue();
         } catch (\Throwable $exception) {
             throw ApiFilterException::createFrom($exception);
@@ -319,20 +328,38 @@ class ApiFilter
     }
 
     /**
-     * todo
+     * Apply a function with parsed query parameters and prepare values
      *
-     * apply function and prepare values (for basic usage)
+     * It will parse filters and call a registered function with parsed filters + prepare values for applied function
+     *
+     * @example
+     * Applying a function directly on filterable
+     * [$sql, $preparedValues] = $apiFilter
+     *      ->declareFunction('fullName', ['firstName', 'surname'])
+     *      ->applyFunction('fullName', ['fullName' => '(Jon, Snow)'], 'SELECT * FROM person');
+     *
+     * $sql:            SELECT * FROM person WHERE firstName = :firstName_fun AND surname = :surname_fun
+     * $preparedValues: ['firstName_fun' => 'Jon', 'surname_fun' => 'Snow']
+     *
+     * @see ApiFilter::declareFunction()
+     * @see ApiFilter::registerFunction()
+     * @see ApiFilter::executeFunction() if you just want to bypass ApiFilter applicators
+     *
+     * @param mixed $filterable of type <T>
+     * @throws ApiFilterException
+     * @return ITuple (<U>, array) where <U> is the output of the registered function and array contains prepared values
      */
     public function applyFunction(string $functionName, array $queryParameters, $filterable): ITuple
     {
         try {
             $filters = $this->parser->parse($queryParameters);
+            $this->applicator->setFilters($filters);
             $filterable = new Filterable($filterable);
 
             $appliedFilterable = $this->functions->execute($functionName, $filters, $filterable);
             $preparedValues = $this->applicator->getPreparedValues($filters, $filterable);
 
-            return Tuple::of($appliedFilterable, $preparedValues);
+            return Tuple::of($appliedFilterable->getValue(), $preparedValues);
         } catch (\Throwable $exception) {
             throw ApiFilterException::createFrom($exception);
         }

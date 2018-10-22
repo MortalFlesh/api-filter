@@ -9,10 +9,10 @@ class FilterFunction extends AbstractFilter
 {
     public const TITLE = 'fun';
 
-    public function __construct(string $column, Value $value, string $title = self::TITLE)
+    public function __construct(string $column, Value $value, ?string $title = null)
     {
         $this->assertValue($value);
-        parent::__construct($title, $column, $value);
+        parent::__construct($title ?? self::TITLE, $column, $value);
     }
 
     private function assertValue(Value $value): void

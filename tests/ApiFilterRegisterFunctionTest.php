@@ -8,11 +8,7 @@ use Lmc\ApiFilter\Constant\Priority;
 use Lmc\ApiFilter\Entity\Parameter;
 use Lmc\ApiFilter\Entity\Value;
 use Lmc\ApiFilter\Exception\ApiFilterException;
-use Lmc\ApiFilter\Filter\FilterFunction;
-use Lmc\ApiFilter\Filter\FilterIn;
-use Lmc\ApiFilter\Filter\FilterWithOperator;
 use Lmc\ApiFilter\Filter\FunctionParameter;
-use Lmc\ApiFilter\Fixtures\SimpleArrayApplicator;
 use Lmc\ApiFilter\Fixtures\SimpleClient;
 
 class ApiFilterRegisterFunctionTest extends AbstractTestCase
@@ -41,8 +37,6 @@ class ApiFilterRegisterFunctionTest extends AbstractTestCase
         array $expectedDql,
         array $expectedPreparedValues
     ): void {
-        $this->markTestSkipped('todo later');
-
         [$queryBuilderWithFilters, $preparedValues] = $this->apiFilter
             ->declareFunction($functionName, $parameters)
             ->applyFunction($functionName, $queryParameters, $this->queryBuilder);
@@ -60,29 +54,29 @@ class ApiFilterRegisterFunctionTest extends AbstractTestCase
                 'fullName',
                 ['firstName', new Parameter('surname')],
                 ['fullName' => '(Jon,Snow)'],
-                ['t.firstName = :firstName_eq', 't.surname = :surname_eq'],
-                ['firstName_eq' => 'Jon', 'surname_eq' => 'Snow'],
+                ['t.firstName = :firstName_fun', 't.surname = :surname_fun'],
+                ['firstName_fun' => 'Jon', 'surname_fun' => 'Snow'],
             ],
             'explicit equals' => [
                 'fullName',
                 [['firstName', 'eq'], new Parameter('surname', 'eq')],
                 ['fullName' => '(Jon,Snow)'],
-                ['t.firstName = :firstName_eq', 't.surname = :surname_eq'],
-                ['firstName_eq' => 'Jon', 'surname_eq' => 'Snow'],
+                ['t.firstName = :firstName_fun', 't.surname = :surname_fun'],
+                ['firstName_fun' => 'Jon', 'surname_fun' => 'Snow'],
             ],
             'explicit between (with mapping to column)' => [
                 'inAge',
                 [['ageFrom', 'gt', 'age'], new Parameter('ageTo', 'lt', 'age')],
                 ['inAge' => '(18,30)'],
-                ['t.age > :age_gt', 't.age < :age_lt'],
-                ['age_gt' => 18, 'age_lt' => 30],
+                ['t.age > :ageFrom_fun', 't.age < :ageTo_fun'],
+                ['ageFrom_fun' => 18, 'ageTo_fun' => 30],
             ],
             'explicit with defaults' => [
                 'girlInAge',
-                [['ageFrom', 'gt', 'age'], ['ageTo', 'lt', 'age'], ['gender', 'eq', 'gender', new Value('female')]],
+                [['ageFrom', 'gt', 'age'], ['ageTo', 'lt', 'age'], ['gender', 'eq', 'gender', 'female']],
                 ['girlInAge' => '(18,30)'],
-                ['t.gender = :gender_eq', 't.age > :age_gt', 't.age < :age_lt'],
-                ['gender_eq' => 'female', 'age_gt' => 18, 'age_lt' => 30],
+                ['t.age > :ageFrom_fun', 't.age < :ageTo_fun', 't.gender = :gender_fun'],
+                ['ageFrom_fun' => 18, 'ageTo_fun' => 30, 'gender_fun' => 'female'],
             ],
             'explicit with defaults - by parameters' => [
                 'girlInAge',
@@ -92,8 +86,8 @@ class ApiFilterRegisterFunctionTest extends AbstractTestCase
                     new Parameter('gender', null, null, new Value('female')),
                 ],
                 ['girlInAge' => '(18,30)'],
-                ['t.gender = :gender_eq', 't.age > :age_gt', 't.age < :age_lt'],
-                ['gender_eq' => 'female', 'age_gt' => 18, 'age_lt' => 30],
+                ['t.age > :ageFrom_fun', 't.age < :ageTo_fun', 't.gender = :gender_fun'],
+                ['ageFrom_fun' => 18, 'ageTo_fun' => 30, 'gender_fun' => 'female'],
             ],
             'explicit with defaults - combined all possible declarations' => [
                 'girlInAge',
@@ -103,8 +97,8 @@ class ApiFilterRegisterFunctionTest extends AbstractTestCase
                     Parameter::equalToDefaultValue('gender', new Value('female')),
                 ],
                 ['girlInAge' => '(18,30)'],
-                ['t.gender = :gender_eq', 't.age > :age_gt', 't.age < :age_lt'],
-                ['gender_eq' => 'female', 'age_gt' => 18, 'age_lt' => 30],
+                ['t.age > :ageFrom_fun', 't.age < :ageTo_fun', 't.gender = :gender_fun'],
+                ['ageFrom_fun' => 18, 'ageTo_fun' => 30, 'gender_fun' => 'female'],
             ],
         ];
     }
@@ -113,42 +107,34 @@ class ApiFilterRegisterFunctionTest extends AbstractTestCase
      * @test
      * @dataProvider provideMultipleFunctionsQueryParameters
      */
-    public function shouldRegisterAndExecuteMultipleFunctionsAndOtherFilters(array $queryParameters): void
+    public function shouldDeclareAndExecuteMultipleFunctionsAndOtherFilters(array $queryParameters): void
     {
         $expectedDqlWhere = [
-            't.age > :age_gt',
-            't.age < :age_lt',
-            't.size IN (:size_in)',
+            't.age > :ageFrom_fun',
+            't.age < :ageTo_fun',
+            't.size IN (:size_fun)',
             't.firstName = :firstName_eq',
-            't.zone = :zone_eq',
-            't.bucket = :bucket_eq',
+            't.zone = :zone_fun',
+            't.bucket = :bucket_fun',
         ];
         $expectedPreparedValues = [
-            'age_gt' => 18,
-            'age_lt' => 30,
-            'size_in' => ['DD', 'D'],
+            'ageFrom_fun' => 18,
+            'ageTo_fun' => 30,
+            'size_fun' => ['DD', 'D'],
             'firstName_eq' => 'Foo',
-            'zone_eq' => 'all',
-            'bucket_eq' => 'common',
+            'zone_fun' => 'all',
+            'bucket_fun' => 'common',
         ];
 
         $this->apiFilter
-            ->registerFunction(
+            ->declareFunction(
                 'perfectWife',
-                ['ageFrom', 'ageTo', 'size'],
-                function ($filterable, FunctionParameter $ageFrom, FunctionParameter $ageTo, FunctionParameter $size) {
-                    $ageFromFilter = new FilterWithOperator('age', $ageFrom->getValue(), '>', 'gt');
-                    $ageToFilter = new FilterWithOperator('age', $ageTo->getValue(), '<', 'lt');
-                    $sizeFilter = new FilterIn($size->getColumn(), $size->getValue());
-
-                    $filterable = $this->apiFilter->applyFilter($ageFromFilter, $filterable);
-                    $filterable = $this->apiFilter->applyFilter($ageToFilter, $filterable);
-                    $filterable = $this->apiFilter->applyFilter($sizeFilter, $filterable);
-
-                    return $filterable;
-                }
+                [
+                    ['ageFrom', 'gt', 'age'],
+                    ['ageTo', 'lt', 'age'],
+                    ['size', 'in'],
+                ]
             )
-            // ->declareFunction('perfect', [['ageFrom', 'gt', 'age'], ['ageTo', 'lt', 'age'], ['size', 'in']])
             ->declareFunction('spot', ['zone', 'bucket']);
 
         $filters = $this->apiFilter->parseFilters($queryParameters);
@@ -163,7 +149,7 @@ class ApiFilterRegisterFunctionTest extends AbstractTestCase
 
         $this->assertInstanceOf(QueryBuilder::class, $queryBuilderWithFilters);
         $this->assertDqlWhere($expectedDqlWhere, $queryBuilderWithFilters);
-        $this->assertSame($expectedPreparedValues, $preparedValues);
+        $this->assertSameValues($expectedPreparedValues, $preparedValues);
     }
 
     public function provideMultipleFunctionsQueryParameters(): array
@@ -222,8 +208,8 @@ class ApiFilterRegisterFunctionTest extends AbstractTestCase
     public function shouldDeclareAndExecuteFunctionWhichUsesApiFilter(array $queryParameters): void
     {
         $sql = 'SELECT * FROM person';
-        $expectedSql = 'SELECT * FROM person WHERE 1 AND firstName = :firstName_eq AND surname = :surname_eq';
-        $expectedPreparedValues = ['firstName_eq' => 'Jon', 'surname_eq' => 'Snow'];
+        $expectedSql = 'SELECT * FROM person WHERE 1 AND firstName = :firstName_fun AND surname = :surname_fun';
+        $expectedPreparedValues = ['firstName_fun' => 'Jon', 'surname_fun' => 'Snow'];
 
         [$appliedSql, $preparedValues] = $this->apiFilter
             ->declareFunction('fullName', ['firstName', 'surname'])
@@ -253,8 +239,8 @@ class ApiFilterRegisterFunctionTest extends AbstractTestCase
     {
         $client = new SimpleClient(['data' => 'some data']);
         $expected = [
-            'query' => 'SELECT * FROM table',
             'data' => 'some data',
+            'query' => 'SELECT * FROM table',
         ];
 
         $result = $this->apiFilter
@@ -274,7 +260,7 @@ class ApiFilterRegisterFunctionTest extends AbstractTestCase
     {
         return [
             // queryParameters
-            'function' => [['sql' => 'SELECT * FROM table']],
+            'implicit - single value' => [['sql' => 'SELECT * FROM table']],
             'explicit - tuple' => [['(fun,query)' => '(sql, "SELECT * FROM table")']],
             'implicit - single values' => [['query' => 'SELECT * FROM table']],
             'explicit - single values' => [['fun' => ['sql'], 'query' => 'SELECT * FROM table']],
@@ -283,234 +269,14 @@ class ApiFilterRegisterFunctionTest extends AbstractTestCase
 
     /**
      * @test
-     * @dataProvider provideQueryParametersForQuery
      */
-    public function shouldApplyFunctionWithExplicitParameters(array $queryParameters, array $expected): void
+    public function shouldNotExecuteFunctionsWithSameParameters(): void
     {
-        $sqlClient = new SimpleClient(['data' => 'sql data']);
-        $elasticClient = new SimpleClient(['data' => 'elastic data']);
-
-        $this->apiFilter
-            ->registerFunction(
-                'sql',
-                ['query'],
-                function (SimpleClient $filterable, FunctionParameter $query) {
-                    return $filterable->query($query->getValue()->getValue());
-                }
-            )
-            ->registerFunction(
-                'elastic',
-                ['query'],
-                function (SimpleClient $filterable, FunctionParameter $query) {
-                    return $filterable->query($query->getValue()->getValue());
-                }
-            );
-
-        $filters = $this->apiFilter->parseFilters($queryParameters);
-
-        $result = [];
-        foreach ($filters as $filter) {
-            if ($filter->getColumn() === 'sql') {
-                $result['sql'] = $this->apiFilter->applyFilter($filter, $sqlClient);
-            }
-
-            if ($filter->getColumn() === 'elastic') {
-                $result['elastic'] = $this->apiFilter->applyFilter($filter, $elasticClient);
-            }
-        }
-
-        $this->assertSame($expected, $result);
-    }
-
-    public function provideQueryParametersForQuery(): array
-    {
-        $sqlQuery = 'SELECT * FROM table';
-        $elasticQuery = '{ "match_all": {} }';
-
-        $sqlResult = [
-            'query' => $sqlQuery,
-            'data' => 'sql data',
-        ];
-        $elasticResult = [
-            'query' => $elasticQuery,
-            'data' => 'elastic data',
-        ];
-
-        return [
-            // queryParameters, expected
-            'function' => [
-                ['sql' => $sqlQuery],
-                ['sql' => $sqlResult],
-            ],
-            'both functions' => [
-                ['sql' => $sqlQuery, 'elastic' => $elasticQuery],
-                ['sql' => $sqlResult, 'elastic' => $elasticResult],
-            ],
-            'explicit - tuple' => [
-                ['(fun,query)' => '(elastic, "{ "match_all": {} }")'],
-                ['elastic' => $elasticResult],
-            ],
-            'explicit - tuple - both' => [
-                ['(fun,query)' => ['(elastic, "{ "match_all": {} }")', '(sql, "SELECT * FROM table")']],
-                ['sql' => $sqlResult, 'elastic' => $elasticResult],
-            ],
-            'explicit - values' => [
-                [
-                    'fun' => ['sql'],
-                    'query' => $sqlQuery,
-                ],
-                ['sql' => $sqlResult],
-            ],
-            'explicit - values - both' => [
-                [
-                    'fun' => ['sql', 'elastic'],
-                    'query' => ['sql' => $sqlQuery, 'elastic' => '{ "match_all": {} }'],
-                ],
-                ['sql' => $sqlResult, 'elastic' => $elasticResult],
-            ],
-        ];
-    }
-
-    /**
-     * @test
-     * @dataProvider provideInvalidQueryParametersForQuery
-     */
-    public function shouldNotApplyFunctionsWhereThereIsNotJustOneOptionOnSingleParameterFunction(
-        array $queryParameters,
-        string $expectedMessage
-    ): void {
         $this->expectException(ApiFilterException::class);
-        $this->expectExceptionMessage($expectedMessage);
+        $this->expectExceptionMessage('There is already a function "person1" with parameter "name" registered. Parameters must be unique.');
 
         $this->apiFilter
-            ->declareFunction('sql', ['query'])
-            ->declareFunction('elastic', ['query']);
-
-        $this->apiFilter->parseFilters($queryParameters);
-    }
-
-    public function provideInvalidQueryParametersForQuery(): array
-    {
-        return [
-            // queryParameters, expectedMessage
-            'not just one option' => [
-                ['query' => 'some query'],
-                '...exception...',
-            ],
-        ];
-    }
-
-    /**
-     * @test
-     * @dataProvider provideInvalidQueryParameters
-     */
-    public function shouldNotApplyFunctionsWhereThereIsNotJustOneOption(
-        array $queryParameters,
-        string $expectedMessage
-    ): void {
-        $this->expectException(ApiFilterException::class);
-        $this->expectExceptionMessage($expectedMessage);
-
-        $this->apiFilter
-            ->registerFunction('first', ['param1', 'param2'], $this->getFunctionFirst())
-            ->registerFunction('second', ['param1', 'param2'], $this->getFunctionSecond())
-            ->registerFunction('+', ['param2', 'param1'], $this->getFunctionPlus());
-
-        $this->apiFilter->parseFilters($queryParameters);
-    }
-
-    public function provideInvalidQueryParameters(): array
-    {
-        return [
-            // queryParameters, expectedMessage
-            'implicit - values' => [
-                ['col1' => 'val1', 'col2' => 'val2'],
-                '...exception...',
-            ],
-            'implicit - tuples' => [
-                ['(col1,col2)' => '(val1,val2)'],
-                '...exception...',
-            ],
-        ];
-    }
-
-    private function getFunctionFirst(): callable
-    {
-        return function ($filterable, FunctionParameter $param1, FunctionParameter $param2) {
-            return $this->apiFilter->applyFilter($param1, $filterable);
-        };
-    }
-
-    private function getFunctionSecond(): callable
-    {
-        return function ($filterable, FunctionParameter $param1, FunctionParameter $param2) {
-            return $this->apiFilter->applyFilter($param2, $filterable);
-        };
-    }
-
-    private function getFunctionPlus(): callable
-    {
-        return function ($filterable, FunctionParameter $param1, FunctionParameter $param2) {
-            return $this->apiFilter->applyFilter(
-                new FilterFunction(
-                    '+',
-                    new Value(
-                        function () use ($param1, $param2) {
-                            return $param1->getValue()->getValue() + $param2->getValue()->getValue();
-                        }
-                    )
-                ),
-                $filterable
-            );
-        };
-    }
-
-    /**
-     * @test
-     * @dataProvider provideValidQueryParametersForFunctionWithSameDeclaration
-     */
-    public function shouldApplyFunctionWhereThereIsNotJustOneOption(array $queryParameters, array $expected): void
-    {
-        $this->apiFilter
-            ->registerApplicator(new SimpleArrayApplicator(), Priority::HIGHEST)
-            ->registerFunction('first', ['param1', 'param2'], $this->getFunctionFirst())
-            ->registerFunction('second', ['param1', 'param2'], $this->getFunctionSecond())
-            ->registerFunction('+', ['param2', 'param1'], $this->getFunctionPlus());
-
-        $filters = $this->apiFilter->parseFilters($queryParameters);
-        $result = $this->apiFilter->applyFilters($filters, []);
-
-        $this->assertSame($expected, $result);
-    }
-
-    public function provideValidQueryParametersForFunctionWithSameDeclaration(): array
-    {
-        return [
-            // queryParameters, expected
-            'function' => [
-                ['first' => '(one,two)'],
-                ['first' => 'one'],
-            ],
-            'more functions' => [
-                ['first' => '(one,two)', 'second' => '(foo,bar)'],
-                ['first' => 'one', 'second' => 'bar'],
-            ],
-            'explicit - tuple' => [
-                ['(fun,param1,param2)' => '(+, 1, 5)'],
-                ['+' => 6],
-            ],
-            'explicit - tuple - more' => [
-                ['(fun,query)' => ['first' => '(2,5)', '+' => '(2,5)']],
-                ['first' => 2, '+' => 7],
-            ],
-            'explicit - values - all' => [
-                [
-                    'fun' => ['+', 'first', 'second'],
-                    'param1' => 3,
-                    'param2' => 5,
-                ],
-                ['+' => 8, 'first' => 3, 'second' => 5],
-            ],
-        ];
+            ->declareFunction('person1', ['name', ['ageFrom', 'gt', 'age']])
+            ->declareFunction('person2', ['name', ['ageFrom', 'gt', 'age'], ['ageTo', 'lt', 'age']]);
     }
 }
