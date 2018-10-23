@@ -211,9 +211,7 @@ class ApiFilter
      * If you want to have a custom callback, not just abstract a name for few parameters, use registerFunction method
      *
      * Note:
-     * When you register more functions with same parameters (not matter of their order),
-     * the caller of the api MUST explicitly define, which function is needed.
-     * Otherwise it is guessed by parameters implicitly.
+     * It is not allowed to register more functions with same parameter (not matter of their order).
      *
      * @example
      * How to abstract first and last name into a fullName function and still benefit from ApiFilter features
@@ -233,9 +231,10 @@ class ApiFilter
     public function declareFunction(string $functionName, array $parameters)
     {
         try {
+            $parameters = $this->functionCreator->normalizeParameters($parameters);
+
             $this->functions->register(
                 $functionName,
-                // todo - normalize first and then pass as IMap to following methods
                 $this->functionCreator->getParameterNames($parameters),
                 $this->functionCreator->createByParameters($this->applicator, $parameters),
                 $this->functionCreator->getParameterDefinitions($parameters)

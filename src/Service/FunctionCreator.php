@@ -21,33 +21,8 @@ class FunctionCreator
         $this->filterFactory = $filterFactory;
     }
 
-    public function getParameterNames(array $parameters): array
-    {
-        return $this
-            ->normalizeParameters($parameters)
-            ->filter(function ($name, Parameter $parameter) {
-                return !$parameter->hasDefaultValue();
-            })
-            ->keys()
-            ->toArray();
-    }
-
-    public function createByParameters(FilterApplicator $applicator, array $parameters): callable
-    {
-        $normalizeParameters = $this->normalizeParameters($parameters);
-
-        return function ($filterable, FunctionParameter ...$parameters) use ($normalizeParameters, $applicator) {
-            return $applicator
-                ->applyAll(
-                    $this->createFiltersFromParameters($parameters, $normalizeParameters),
-                    new Filterable($filterable)
-                )
-                ->getValue();
-        };
-    }
-
     /** @return Parameter[]|IMap IMap<string, Parameter> */
-    private function normalizeParameters(array $parameters): IMap
+    public function normalizeParameters(array $parameters): IMap
     {
         $normalizeParameters = new Map('string', Parameter::class);
 
@@ -65,6 +40,38 @@ class FunctionCreator
         }
 
         return $normalizeParameters;
+    }
+
+    /**
+     * @see FunctionCreator::normalizeParameters()
+     *
+     * @param Parameter[]|IMap $normalizedParameters IMap<string, Parameter>
+     */
+    public function getParameterNames(IMap $normalizedParameters): array
+    {
+        return $normalizedParameters
+            ->filter(function ($name, Parameter $parameter) {
+                return !$parameter->hasDefaultValue();
+            })
+            ->keys()
+            ->toArray();
+    }
+
+    /**
+     * @see FunctionCreator::normalizeParameters()
+     *
+     * @param Parameter[]|IMap $normalizedParameters IMap<string, Parameter>
+     */
+    public function createByParameters(FilterApplicator $applicator, IMap $normalizedParameters): callable
+    {
+        return function ($filterable, FunctionParameter ...$parameters) use ($normalizedParameters, $applicator) {
+            return $applicator
+                ->applyAll(
+                    $this->createFiltersFromParameters($parameters, $normalizedParameters),
+                    new Filterable($filterable)
+                )
+                ->getValue();
+        };
     }
 
     private function assertParameter($parameter): void
@@ -118,13 +125,14 @@ class FunctionCreator
     }
 
     /**
+     * @see FunctionCreator::normalizeParameters()
+     *
+     * @param Parameter[]|IMap $normalizedParameters IMap<string, Parameter>
      * @return Parameter[]
      */
-    public function getParameterDefinitions(array $parameters): array
+    public function getParameterDefinitions(IMap $normalizedParameters): array
     {
-        // todo - add test
-        return $this
-            ->normalizeParameters($parameters)
+        return $normalizedParameters
             ->values()
             ->toArray();
     }

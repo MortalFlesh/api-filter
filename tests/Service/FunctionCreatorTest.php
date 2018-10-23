@@ -37,7 +37,7 @@ class FunctionCreatorTest extends AbstractTestCase
      */
     public function shouldTransformParametersIntoFunctionParameterNames(array $parameters, array $expected): void
     {
-        $result = $this->functionCreator->getParameterNames($parameters);
+        $result = $this->functionCreator->getParameterNames($this->functionCreator->normalizeParameters($parameters));
 
         $this->assertSame($expected, $result);
     }
@@ -80,7 +80,10 @@ class FunctionCreatorTest extends AbstractTestCase
         $this->filterApplicator->setFilters(Filters::from([$firstName, $surname]));
 
         $parameters = ['firstName', 'surname'];
-        $functionWithImplicitFilters = $this->functionCreator->createByParameters($this->filterApplicator, $parameters);
+        $functionWithImplicitFilters = $this->functionCreator->createByParameters(
+            $this->filterApplicator,
+            $this->functionCreator->normalizeParameters($parameters)
+        );
         $this->functions->register('fullName', $parameters, $functionWithImplicitFilters);
 
         $result = $functionWithImplicitFilters($sql, $firstName, $surname);
@@ -110,7 +113,10 @@ class FunctionCreatorTest extends AbstractTestCase
         $size = new FunctionParameter('size', new Value(['DD', 'D']));
         $this->filterApplicator->setFilters(Filters::from([$ageFrom, $ageTo, $size]));
 
-        $functionWithImplicitFilters = $this->functionCreator->createByParameters($this->filterApplicator, $parameters);
+        $functionWithImplicitFilters = $this->functionCreator->createByParameters(
+            $this->filterApplicator,
+            $this->functionCreator->normalizeParameters($parameters)
+        );
         $this->functions->register('fullName', ['ageFrom', 'ageTo', 'size'], $functionWithImplicitFilters);
 
         $result = $functionWithImplicitFilters($sql, $ageFrom, $ageTo, $size);
@@ -161,7 +167,10 @@ class FunctionCreatorTest extends AbstractTestCase
         $this->expectException(\InvalidArgumentException::class);
         $this->expectExceptionMessage($expectedMessage);
 
-        $this->functionCreator->createByParameters($this->filterApplicator, $parameters);
+        $this->functionCreator->createByParameters(
+            $this->filterApplicator,
+            $this->functionCreator->normalizeParameters($parameters)
+        );
     }
 
     public function provideInvalidParameters(): array
@@ -188,12 +197,29 @@ class FunctionCreatorTest extends AbstractTestCase
         $this->filterApplicator->setFilters(Filters::from([$firstName]));
 
         $parameters = ['firstName', 'surname'];
-        $functionWithImplicitFilters = $this->functionCreator->createByParameters($this->filterApplicator, $parameters);
+        $functionWithImplicitFilters = $this->functionCreator->createByParameters(
+            $this->filterApplicator,
+            $this->functionCreator->normalizeParameters($parameters)
+        );
         $this->functions->register('fullName', $parameters, $functionWithImplicitFilters);
 
         $this->expectException(\InvalidArgumentException::class);
         $this->expectExceptionMessage('Parameter "surname" is required and must have a value.');
 
         $functionWithImplicitFilters('SELECT * FROM person', $firstName);
+    }
+
+    /**
+     * @test
+     */
+    public function shouldGetParameterDefinitions(): void
+    {
+        $parameters = [['ageFrom', 'gt', 'age'], 'firstName'];
+        $expected = [new Parameter('ageFrom', 'gt', 'age'), new Parameter('firstName')];
+        $parameters = $this->functionCreator->normalizeParameters($parameters);
+
+        $result = $this->functionCreator->getParameterDefinitions($parameters);
+
+        $this->assertEquals($expected, $result);
     }
 }
