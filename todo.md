@@ -57,5 +57,6 @@ todo
     - apply function
     
     - pridat moznost i z `?filter[]=(spot,common,all)`      [todo]
-    
+        - povolit i `?filter=(single,filter,only)` ?
+
     - code-style fix po mergi (odebrat zbytecne commenty u mixed)
