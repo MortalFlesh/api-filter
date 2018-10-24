@@ -12,13 +12,13 @@ use MF\Collection\Mutable\Generic\Map;
 
 class Functions
 {
-    /** @var IMap<string,callable>|callable[] */
+    /** @var IMap<string,callable> */
     private $functions;
-    /** @var IMap<string,array>|array[] */
+    /** @var IMap<string,array> */
     private $functionParameters;
-    /** @var IMap<string,array>|Parameter[] */
+    /** @var IMap<string,Parameter> */
     private $parameterDefinitions;
-    /** @var array */
+    /** @var array<string,string> parameterName => functionName */
     private $registeredParameters;
 
     public function __construct()
