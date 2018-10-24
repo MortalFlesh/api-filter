@@ -35,6 +35,8 @@ class QueryParametersParser
 
     public function parse(array $queryParameters): FiltersInterface
     {
+        $this->functionParser->setQueryParameters($queryParameters);
+
         $filters = new Filters();
         foreach ($this->parseFilters($queryParameters) as $filter) {
             $filters->addFilter($filter);
@@ -45,8 +47,6 @@ class QueryParametersParser
 
     private function parseFilters(array $queryParameters): iterable
     {
-        $this->functionParser->setQueryParameters($queryParameters);
-
         foreach ($queryParameters as $rawColumn => $rawValue) {
             foreach ($this->parsers as $parser) {
                 if ($parser->supports($rawColumn, $rawValue)) {
