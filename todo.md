@@ -19,12 +19,22 @@ todo
     - feature/update-dependencies                           [PR]
         - php stan - assertion
     
-    - feature/add-filter-factory                            [prepared but waits for `change-filter-title`]
+    - feature/add-filter-factory                            [prepared but waits for `change-filter-title` -> `parsery`]
     
-    - parsery
-        - postupne?
-            - prvni bez function parseru
-            - UT + parser (i kdyz se nepouzije)
+    - parsery                                               [waits for `feature/add-filter-factory`]
+        - prvni
+            - interface
+            - abstract parser + test case
+            - query parmeter parser + test?
+                - tady bude parse -> parseOld a v parse bude nove reseni + fallback na parseOld
+            - pridan `SingleColumnSingleValueParser` + test (jako nejjednodussi)
+        - dalsi...
+            - `SingleColumnArrayValueParser` + test 
+            - `UnsupportedTupleCombinationParser` + test 
+            - `TupleColumnArrayValueParser` + test 
+            - `TupleColumnTupleValueParser` + test
+        - finale
+            - zrusit parseOld metodu a dalsi private co tam jsou
     
     - FILTER FUNCTION
         - FilterFunction 
