@@ -7,21 +7,18 @@ todo
 - pockat az se vyda code-fixer
 - pripravit male PR
     - ~~code-style fix pred mergem (commenty u mixed)~~     [merged]
-    - feature/add-apifilter-exception                       [PR]
-    - forbid-nested-value-and-filterable                    [PR]
-    - feature/change-filter-title                           [PR -> rebase and send `add-filter-factory`]
+    - ~~feature/update-dependencies~~                       [merged]
+        - php stan - assertion
+    - ~~forbid-nested-value-and-filterable~~                [merged]
+    - ~~feature/change-filter-title~~                       [merged -> `add-filter-factory`]
         - [a-zA-Z...] + fullTitle
-    
-    - feature/extend-enumerable-interface-by-filters-interface [PR]
+    - ~~feature/extend-enumerable-interface-by-filters-interface~~ [merged]
         - add Filters::dump method for better testing
         - add IEnumerable
-        
-    - feature/update-dependencies                           [PR]
-        - php stan - assertion
+    - ~~feature/add-apifilter-exception~~                   [merged]
+    - ~~feature/add-filter-factory~~                        [merged -> `parsery`]
     
-    - feature/add-filter-factory                            [prepared but waits for `change-filter-title` -> `parsery`]
-    
-    - parsery                                               [waits for `feature/add-filter-factory`]
+    - parsery                                               []
         - prvni
             - interface
             - abstract parser + test case
