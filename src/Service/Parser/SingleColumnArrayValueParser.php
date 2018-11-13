@@ -6,7 +6,7 @@ class SingleColumnArrayValueParser extends AbstractParser
 {
     public function supports($rawColumn, $rawValue): bool
     {
-        return is_string($rawColumn) && !$this->isTuple($rawColumn) && is_array($rawValue);
+        return !$this->isTuple($rawColumn) && is_array($rawValue);
     }
 
     public function parse($rawColumn, $rawValue): iterable

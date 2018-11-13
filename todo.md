@@ -18,20 +18,23 @@ todo
     - ~~feature/add-apifilter-exception~~                   [merged]
     - ~~feature/add-filter-factory~~                        [merged -> `parsery`]
     
-    - parsery                                               []
-        - prvni
+    - parsery                                               [...]
+        - ~~prvni~~                                         [merged]
             - interface
             - abstract parser + test case
             - query parmeter parser + test?
                 - tady bude parse -> parseOld a v parse bude nove reseni + fallback na parseOld
             - pridan `SingleColumnSingleValueParser` + test (jako nejjednodussi)
         - dalsi...
-            - `SingleColumnArrayValueParser` + test 
-            - `UnsupportedTupleCombinationParser` + test 
-            - `TupleColumnArrayValueParser` + test 
-            - `TupleColumnTupleValueParser` + test
+            - `SingleColumnArrayValueParser` + test         [merged]
+            - `TupleColumnArrayValueParser` + test          [PR]
+            - `TupleColumnTupleValueParser` + test          [PR]
+            - `UnsupportedTupleCombinationParser` + test    [prepare waits for TupleParsers]
         - finale
             - zrusit parseOld metodu a dalsi private co tam jsou
+            - pridat info do readme
+    
+    - _kouknout dolu na TODO_
     
     - FILTER FUNCTION
         - FilterFunction 

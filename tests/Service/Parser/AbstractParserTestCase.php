@@ -5,7 +5,7 @@ namespace Lmc\ApiFilter\Service\Parser;
 use Lmc\ApiFilter\AbstractTestCase;
 use Lmc\ApiFilter\Entity\Value;
 use Lmc\ApiFilter\Service\FilterFactory;
-use Lmc\ApiFilter\Service\Parser\Fixtures\DummyFilter;
+use Lmc\ApiFilter\Service\Parser\Fixtures\SimpleFilter;
 use Mockery as m;
 
 abstract class AbstractParserTestCase extends AbstractTestCase
@@ -113,7 +113,7 @@ abstract class AbstractParserTestCase extends AbstractTestCase
         $filterFactory = m::mock(FilterFactory::class);
         $filterFactory->shouldReceive('createFilter')
             ->andReturnUsing(function (string $column, string $filter, Value $value) {
-                return new DummyFilter($column, $filter, $value->getValue());
+                return new SimpleFilter($column, $filter, $value->getValue());
             });
 
         return $filterFactory;
@@ -126,7 +126,7 @@ abstract class AbstractParserTestCase extends AbstractTestCase
      * @test
      * @dataProvider provideParseableColumnAndValue
      */
-    public function shouldSupportColumnAndValue($rawColumn, $rawValue): void
+    public function shouldSupportColumnAndValue(string $rawColumn, $rawValue): void
     {
         $result = $this->parser->supports($rawColumn, $rawValue);
 
@@ -140,7 +140,7 @@ abstract class AbstractParserTestCase extends AbstractTestCase
      * @test
      * @dataProvider provideNotSupportedColumnAndValue
      */
-    public function shouldNotSupportColumnAndValue($rawColumn, $rawValue): void
+    public function shouldNotSupportColumnAndValue(string $rawColumn, $rawValue): void
     {
         $result = $this->parser->supports($rawColumn, $rawValue);
 
@@ -156,20 +156,20 @@ abstract class AbstractParserTestCase extends AbstractTestCase
      * @test
      * @dataProvider provideParseableColumnAndValue
      */
-    public function shouldParseColumnAndValue($rawColumn, $rawValue, array $expected): void
+    public function shouldParseColumnAndValue(string $rawColumn, $rawValue, array $expected): void
     {
         $result = $this->parseColumnAndValue($rawColumn, $rawValue);
 
         $this->assertSame($expected, $result);
     }
 
-    protected function parseColumnAndValue($rawColumn, $rawValue): array
+    protected function parseColumnAndValue(string $rawColumn, $rawValue): array
     {
         $result = [];
 
-        /** @var DummyFilter $filter */
+        /** @var SimpleFilter $filter */
         foreach ($this->parser->parse($rawColumn, $rawValue) as $filter) {
-            $this->assertInstanceOf(DummyFilter::class, $filter);
+            $this->assertInstanceOf(SimpleFilter::class, $filter);
             $result[] = $filter->toArray();
         }
 

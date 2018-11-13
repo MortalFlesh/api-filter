@@ -5,7 +5,7 @@ namespace Lmc\ApiFilter\Service\Parser\Fixtures;
 use Lmc\ApiFilter\Entity\Value;
 use Lmc\ApiFilter\Filter\FilterInterface;
 
-class DummyFilter implements FilterInterface
+class SimpleFilter implements FilterInterface
 {
     /** @var string */
     private $column;
