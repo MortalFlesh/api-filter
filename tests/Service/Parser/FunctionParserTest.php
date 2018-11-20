@@ -4,6 +4,10 @@ namespace Lmc\ApiFilter\Service\Parser;
 
 use Lmc\ApiFilter\Service\Functions;
 
+/**
+ * @covers \Lmc\ApiFilter\Service\Parser\FunctionParser
+ * @covers \Lmc\ApiFilter\Service\Parser\FunctionParser\AbstractFunctionParser
+ */
 class FunctionParserTest extends AbstractParserTestCase
 {
     /** @var FunctionParser */
