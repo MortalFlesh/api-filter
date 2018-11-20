@@ -24,10 +24,7 @@ class FunctionParser extends AbstractParser
         parent::__construct($filterFactory);
 
         $this->parsers = new PrioritizedCollection(FunctionParserInterface::class);
-        $this->parsers->add(
-            new ExplicitFunctionDefinitionInValueParser($filterFactory, $functions),
-            Priority::HIGHEST
-        );
+        $this->parsers->add(new ExplicitFunctionDefinitionInValueParser($filterFactory, $functions), Priority::HIGHEST);
         $this->parsers->add(new ExplicitFunctionDefinitionParser($filterFactory, $functions), Priority::HIGHER);
         $this->parsers->add(new ImplicitFunctionDefinitionByValueParser($filterFactory, $functions), Priority::MEDIUM);
         $this->parsers->add(new ExplicitFunctionDefinitionByTupleParser($filterFactory, $functions), Priority::LOW);
