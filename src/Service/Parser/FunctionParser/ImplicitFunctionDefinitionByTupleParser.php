@@ -9,7 +9,7 @@ class ImplicitFunctionDefinitionByTupleParser extends AbstractFunctionParser
     /**
      * @param string|array $rawValue Raw column value from query parameters
      */
-    public function supports(string $rawColumn, $rawValue): bool
+    public function supportsParameters(array $queryParameters, string $rawColumn, $rawValue): bool
     {
         if ($this->isTuple($rawColumn)) {
             $possiblyParameters = Tuple::parse($rawColumn)->toArray();

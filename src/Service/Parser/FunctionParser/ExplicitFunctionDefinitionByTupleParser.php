@@ -9,7 +9,7 @@ class ExplicitFunctionDefinitionByTupleParser extends AbstractFunctionParser
     /**
      * @param string|array $rawValue Raw column value from query parameters
      */
-    public function supports(string $rawColumn, $rawValue): bool
+    public function supportsParameters(array $queryParameters, string $rawColumn, $rawValue): bool
     {
         return $this->isTuple($rawColumn) && Tuple::parse($rawColumn)->first() === self::FUNCTION_COLUMN;
     }

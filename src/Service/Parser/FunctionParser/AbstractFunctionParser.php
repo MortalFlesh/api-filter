@@ -43,6 +43,23 @@ abstract class AbstractFunctionParser extends AbstractParser implements Function
     /**
      * @param string|array $rawValue Raw column value from query parameters
      */
+    final public function supports(string $rawColumn, $rawValue): bool
+    {
+        return $this->supportsParameters($this->assertQueryParameters(), $rawColumn, $rawValue);
+    }
+
+    protected abstract function supportsParameters(array $assertQueryParameters, string $rawColumn, $rawValue): bool;
+
+    private function assertQueryParameters(): array
+    {
+        Assertion::notNull($this->queryParameters, 'Query parameters must be set to FunctionParser.');
+
+        return $this->queryParameters;
+    }
+
+    /**
+     * @param string|array $rawValue Raw column value from query parameters
+     */
     final public function parse(string $rawColumn, $rawValue): iterable
     {
         yield from $this->parseParameters($this->assertQueryParameters(), $rawColumn, $rawValue);
@@ -53,20 +70,13 @@ abstract class AbstractFunctionParser extends AbstractParser implements Function
      */
     protected abstract function parseParameters(array $queryParameters, string $rawColumn, $rawValue): iterable;
 
-    private function assertQueryParameters(): array
-    {
-        Assertion::notNull($this->queryParameters, 'Query parameters must be set to FunctionParser.');
-
-        return $this->queryParameters;
-    }
-
     protected function isThereAnyExplicitFunctionDefinition(array $queryParameters): bool
     {
-        return !$this->isParsed(self::FUNCTION_COLUMN)
+        return !$this->isColumnParsed(self::FUNCTION_COLUMN)
             && array_key_exists(self::FUNCTION_COLUMN, $queryParameters);
     }
 
-    protected function isParsed(string $column): bool
+    protected function isColumnParsed(string $column): bool
     {
         return $this->alreadyParsedColumns !== null
             && $this->alreadyParsedColumns->containsKey($column);
@@ -102,7 +112,7 @@ abstract class AbstractFunctionParser extends AbstractParser implements Function
 
     protected function parseFunctionParameter(string $parameter, $value): iterable
     {
-        if (!$this->isParsed($parameter)) {
+        if (!$this->isColumnParsed($parameter)) {
             $this->alreadyParsedColumns[$parameter] = true;
 
             yield $this->createFilter($parameter, Filter::FUNCTION_PARAMETER, $value);
