@@ -12,7 +12,8 @@ use MF\Collection\Mutable\Generic\Map;
 
 abstract class AbstractFunctionParser extends AbstractParser implements FunctionParserInterface
 {
-    protected const FUNCTION_COLUMN = 'fun';
+    protected const COLUMN_FUNCTION = 'fun';
+    protected const COLUMN_FILTER = 'filter';
     private const ERROR_MULTIPLE_FUNCTION_CALL = 'It is not allowed to call one function multiple times.';
 
     /** @var Functions */
@@ -48,7 +49,7 @@ abstract class AbstractFunctionParser extends AbstractParser implements Function
         return $this->supportsParameters($this->assertQueryParameters(), $rawColumn, $rawValue);
     }
 
-    abstract protected function supportsParameters(array $assertQueryParameters, string $rawColumn, $rawValue): bool;
+    abstract protected function supportsParameters(array $queryParameters, string $rawColumn, $rawValue): bool;
 
     private function assertQueryParameters(): array
     {

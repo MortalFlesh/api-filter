@@ -11,7 +11,7 @@ class ExplicitFunctionDefinitionInValueParser extends AbstractFunctionParser
      */
     public function supportsParameters(array $queryParameters, string $rawColumn, $rawValue): bool
     {
-        return $rawColumn === self::FUNCTION_COLUMN;
+        return array_key_exists(self::COLUMN_FUNCTION, $queryParameters);
     }
 
     /**
@@ -19,31 +19,27 @@ class ExplicitFunctionDefinitionInValueParser extends AbstractFunctionParser
      */
     public function parseParameters(array $queryParameters, string $rawColumn, $rawValue): iterable
     {
-        if ($this->isThereAnyExplicitFunctionDefinition($queryParameters)) {
-            $this->markColumnAsParsed(self::FUNCTION_COLUMN);
-            $functionNames = $queryParameters[self::FUNCTION_COLUMN];
+        if ($this->isColumnParsed(self::COLUMN_FUNCTION)) {
+            return;
+        }
 
-            Assertion::isArray(
-                $functionNames,
-                'Explicit function definition by values must be an array of functions. %s given.'
-            );
+        $this->markColumnAsParsed(self::COLUMN_FUNCTION);
+        $functionNames = $queryParameters[self::COLUMN_FUNCTION];
 
-            foreach ($functionNames as $functionName) {
-                yield from $this->parseFunction($functionName);
+        Assertion::isArray(
+            $functionNames,
+            'Explicit function definition by values must be an array of functions. %s given.'
+        );
 
-                foreach ($this->functions->getParametersFor($functionName) as $parameter) {
-                    $this->assertParameterExists($queryParameters, $parameter, $functionName);
+        foreach ($functionNames as $functionName) {
+            yield from $this->parseFunction($functionName);
 
-                    yield from $this->parseFunctionParameter($parameter, $queryParameters[$parameter]);
-                }
+            foreach ($this->functions->getParametersFor($functionName) as $parameter) {
+                $this->assertParameterExists($queryParameters, $parameter, $functionName);
+
+                yield from $this->parseFunctionParameter($parameter, $queryParameters[$parameter]);
             }
         }
-    }
-
-    private function isThereAnyExplicitFunctionDefinition(array $queryParameters): bool
-    {
-        return !$this->isColumnParsed(self::FUNCTION_COLUMN)
-            && array_key_exists(self::FUNCTION_COLUMN, $queryParameters);
     }
 
     private function assertParameterExists(array $queryParameters, string $parameter, string $functionName): void

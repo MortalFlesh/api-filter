@@ -2,11 +2,13 @@
 
 namespace Lmc\ApiFilter\Service\Parser\FunctionParser;
 
+use Lmc\ApiFilter\Assertion;
+
 class FunctionInFilterParameterParser extends AbstractFunctionParser
 {
-    protected function supportsParameters(array $assertQueryParameters, string $rawColumn, $rawValue): bool
+    protected function supportsParameters(array $queryParameters, string $rawColumn, $rawValue): bool
     {
-        throw new \Exception(sprintf('Method %s is not implemented yet.', __METHOD__));
+        return array_key_exists(self::COLUMN_FILTER, $queryParameters);
     }
 
     /**
@@ -14,6 +16,10 @@ class FunctionInFilterParameterParser extends AbstractFunctionParser
      */
     protected function parseParameters(array $queryParameters, string $rawColumn, $rawValue): iterable
     {
-        throw new \Exception(sprintf('Method %s is not implemented yet.', __METHOD__));
+        Assertion::isArray($rawValue, 'Filter parameter must have functions in array.');
+
+        // for each functions in rawValue, create a filter function
+
+        yield;
     }
 }

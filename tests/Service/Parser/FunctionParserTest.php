@@ -83,6 +83,17 @@ class FunctionParserTest extends AbstractParserTestCase
     {
         return [
             // rawColumn, rawValue, expectedFilters
+            'two functions in filter parameter' => [
+                'filter',
+                ['(fullName, Jon, Snow)', '(sql, "SELECT * FROM table")'],
+                [
+                    ['fullName', 'function', 'callable'],
+                    ['firstName', 'function-parameter', 'Jon'],
+                    ['surname', 'function-parameter', 'Snow'],
+                    ['sql', 'function', 'callable'],
+                    ['query', 'function-parameter', 'SELECT * FROM table'],
+                ],
+            ],
             'scalar column + tuple value - fullName' => [
                 'fullName',
                 '(Jon,Snow)',
