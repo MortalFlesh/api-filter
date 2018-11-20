@@ -2,7 +2,7 @@
 
 namespace Lmc\ApiFilter\Entity;
 
-use Assert\Assertion;
+use Lmc\ApiFilter\Assertion;
 use Lmc\ApiFilter\Constant\Filter;
 use Lmc\ApiFilter\Filter\FunctionParameter;
 
