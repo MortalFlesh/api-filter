@@ -5,8 +5,11 @@ namespace Lmc\ApiFilter;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Query\Expr\Andx;
 use Doctrine\ORM\QueryBuilder;
-use Mockery\Adapter\Phpunit\MockeryPHPUnitIntegration;
+use Lmc\ApiFilter\Entity\Value;
+use Lmc\ApiFilter\Service\FilterFactory;
+use Lmc\ApiFilter\Service\Parser\Fixtures\SimpleFilter;
 use Mockery as m;
+use Mockery\Adapter\Phpunit\MockeryPHPUnitIntegration;
 use PHPUnit\Framework\TestCase;
 
 abstract class AbstractTestCase extends TestCase
@@ -47,6 +50,17 @@ abstract class AbstractTestCase extends TestCase
         }
 
         $this->assertSame($expected, $actual);
+    }
+
+    protected function mockFilterFactory(): FilterFactory
+    {
+        $filterFactory = m::mock(FilterFactory::class);
+        $filterFactory->shouldReceive('createFilter')
+            ->andReturnUsing(function (string $column, string $filter, Value $value) {
+                return new SimpleFilter($column, $filter, $value->getValue());
+            });
+
+        return $filterFactory;
     }
 
     protected function createBlankCallback(string $name): callable

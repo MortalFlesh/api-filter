@@ -3,10 +3,7 @@
 namespace Lmc\ApiFilter\Service\Parser;
 
 use Lmc\ApiFilter\AbstractTestCase;
-use Lmc\ApiFilter\Entity\Value;
-use Lmc\ApiFilter\Service\FilterFactory;
 use Lmc\ApiFilter\Service\Parser\Fixtures\SimpleFilter;
-use Mockery as m;
 
 abstract class AbstractParserTestCase extends AbstractTestCase
 {
@@ -107,17 +104,6 @@ abstract class AbstractParserTestCase extends AbstractTestCase
 
     /** @var ParserInterface */
     protected $parser;
-
-    protected function mockFilterFactory(): FilterFactory
-    {
-        $filterFactory = m::mock(FilterFactory::class);
-        $filterFactory->shouldReceive('createFilter')
-            ->andReturnUsing(function (string $column, string $filter, Value $value) {
-                return new SimpleFilter($column, $filter, $value->getValue());
-            });
-
-        return $filterFactory;
-    }
 
     /**
      * @param mixed $rawValue Value from query parameters
