@@ -4,7 +4,7 @@ namespace Lmc\ApiFilter\Service\Parser\FunctionParser;
 
 use MF\Collection\Mutable\Generic\IMap;
 
-class FunctionDefinitionParser extends AbstractFunctionParser
+class ExplicitFunctionDefinitionParser extends AbstractFunctionParser
 {
     /** @var ?bool */
     private $isAllImplicitFunctionDefinitionsChecked;
