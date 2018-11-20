@@ -43,11 +43,11 @@ class SimpleFilter implements FilterInterface
 
     public function getTitle(): string
     {
-        throw new \Exception(sprintf('Method %s is not implemented yet.', __METHOD__));
+        throw new \BadMethodCallException(sprintf('Method %s is not implemented.', __METHOD__));
     }
 
     public function setFullTitle(string $title): void
     {
-        throw new \Exception(sprintf('Method %s is not implemented yet.', __METHOD__));
+        throw new \BadMethodCallException(sprintf('Method %s is not implemented.', __METHOD__));
     }
 }

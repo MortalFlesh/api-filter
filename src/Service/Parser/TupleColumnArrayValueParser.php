@@ -2,18 +2,18 @@
 
 namespace Lmc\ApiFilter\Service\Parser;
 
-use Assert\Assertion;
+use Lmc\ApiFilter\Assertion;
 use Lmc\ApiFilter\Constant\Filter;
 use MF\Collection\Immutable\Tuple;
 
 class TupleColumnArrayValueParser extends AbstractParser
 {
-    public function supports($rawColumn, $rawValue): bool
+    public function supports(string $rawColumn, $rawValue): bool
     {
         return $this->isTuple($rawColumn) && is_array($rawValue);
     }
 
-    public function parse($rawColumn, $rawValue): iterable
+    public function parse(string $rawColumn, $rawValue): iterable
     {
         $columns = Tuple::parse($rawColumn)->toArray();
         $columnsCount = count($columns);
@@ -23,10 +23,7 @@ class TupleColumnArrayValueParser extends AbstractParser
             $values = $this->parseValue($tupleValue, $columnsCount);
 
             foreach ($columns as $column) {
-                Assertion::false(
-                    $this->isColumnWithFilter($column),
-                    'Filters can be specified either in columns or in values - not in both'
-                );
+                $this->assertColumnWithoutFilter($column);
 
                 yield $this->createFilter($column, $filter, array_shift($values));
             }
@@ -39,5 +36,13 @@ class TupleColumnArrayValueParser extends AbstractParser
         $this->assertColumnsAndValuesCount($columnsCount, count($values));
 
         return $values;
+    }
+
+    private function assertColumnWithoutFilter(string $column): void
+    {
+        Assertion::false(
+            $this->isColumnWithFilter($column),
+            'Filters can be specified either in columns or in values - not in both'
+        );
     }
 }

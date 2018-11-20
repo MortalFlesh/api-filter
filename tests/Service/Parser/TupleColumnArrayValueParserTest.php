@@ -2,6 +2,8 @@
 
 namespace Lmc\ApiFilter\Service\Parser;
 
+use Lmc\ApiFilter\Exception\InvalidArgumentException;
+
 /**
  * @covers \Lmc\ApiFilter\Service\Parser\TupleColumnArrayValueParser
  */
@@ -31,27 +33,37 @@ class TupleColumnArrayValueParserTest extends AbstractParserTestCase
 
     /**
      * @test
+     * @dataProvider provideInvalidQueryParameters
+     *
+     * @param string|array $rawValue
      */
-    public function shouldNotCreateFilterForInInTuple(): void
-    {
-        $this->expectException(\InvalidArgumentException::class);
-        $this->expectExceptionMessage('Tuples are not allowed in IN filter.');
+    public function shouldNotCreateFilterForInvalidQueryParameters(
+        string $rawColumn,
+        $rawValue,
+        string $expectedMessage
+    ): void {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage($expectedMessage);
 
-        foreach ($this->parser->parse('(col1,col2)', ['in' => '([1;2],[3;4])']) as $item) {
+        foreach ($this->parser->parse($rawColumn, $rawValue) as $item) {
             $this->fail('This should not get here.');
         }
     }
 
-    /**
-     * @test
-     */
-    public function shouldNotCreateFilterForFilterInBothColumnAndValue(): void
+    public function provideInvalidQueryParameters(): array
     {
-        $this->expectException(\InvalidArgumentException::class);
-        $this->expectExceptionMessage('Filters can be specified either in columns or in values - not in both');
-
-        foreach ($this->parser->parse('(col1[gt],col2[lt])', ['gte' => '(1,3)']) as $item) {
-            $this->fail('This should not get here.');
-        }
+        return [
+            // rawColumn, rawValue, expectedMessage
+            'in filter in tuple' => [
+                '(col1,col2)',
+                ['in' => '([1;2],[3;4])'],
+                'Tuples are not allowed in IN filter.',
+            ],
+            'filter in both column an value' => [
+                '(col1[gt],col2[lt])',
+                ['gte' => '(1,3)'],
+                'Filters can be specified either in columns or in values - not in both',
+            ],
+        ];
     }
 }

@@ -25,7 +25,7 @@ class UnsupportedTupleCombinationParserTest extends AbstractParserTestCase
      * @test
      * @dataProvider provideParseableColumnAndValue
      */
-    public function shouldParseColumnAndValue($rawColumn, $rawValue, array $expected): void
+    public function shouldParseColumnAndValue(string $rawColumn, $rawValue, array $expected): void
     {
         $this->expectException(\InvalidArgumentException::class);
 
@@ -82,6 +82,11 @@ class UnsupportedTupleCombinationParserTest extends AbstractParserTestCase
                 '(col1,col2)',
                 ['filter' => 'value'],
                 'Invalid combination of a tuple and a scalar. Column (col1,col2) and value [filter => value].',
+            ],
+            'tuple column + nested array value' => [
+                '(col1,col2)',
+                ['filter' => ['foo' => ['bar', 'baz']]],
+                'Invalid combination of a tuple and a scalar. Column (col1,col2) and value [filter => [foo => [bar, baz]]].',
             ],
         ];
     }

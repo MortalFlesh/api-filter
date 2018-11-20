@@ -8,12 +8,12 @@ use MF\Collection\Immutable\Tuple;
 
 class TupleColumnTupleValueParser extends AbstractParser
 {
-    public function supports($rawColumn, $rawValue): bool
+    public function supports(string $rawColumn, $rawValue): bool
     {
         return $this->isTuple($rawColumn) && $this->isTuple($rawValue);
     }
 
-    public function parse($rawColumn, $rawValue): iterable
+    public function parse(string $rawColumn, $rawValue): iterable
     {
         [$columns, $values] = $this->parseColumnsAndValues($rawColumn, $rawValue);
 
@@ -34,13 +34,10 @@ class TupleColumnTupleValueParser extends AbstractParser
         }
     }
 
-    /** @param string|array $rawValue */
-    private function parseColumnsAndValues(string $rawColumn, $rawValue): ITuple
+    private function parseColumnsAndValues(string $rawColumn, string $rawValue): ITuple
     {
         $columns = Tuple::parse($rawColumn)->toArray();
-        $values = is_array($rawValue)
-            ? $rawValue // todo?
-            : Tuple::parse($rawValue)->toArray();
+        $values = Tuple::parse($rawValue)->toArray();
         $this->assertColumnsAndValuesCount(count($columns), count($values));
 
         return Tuple::of($columns, $values);

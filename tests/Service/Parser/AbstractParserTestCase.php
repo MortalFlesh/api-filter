@@ -120,7 +120,6 @@ abstract class AbstractParserTestCase extends AbstractTestCase
     }
 
     /**
-     * @param mixed $rawColumn Column from query parameters
      * @param mixed $rawValue Value from query parameters
      *
      * @test
@@ -134,7 +133,6 @@ abstract class AbstractParserTestCase extends AbstractTestCase
     }
 
     /**
-     * @param mixed $rawColumn Column from query parameters
      * @param mixed $rawValue Value from query parameters
      *
      * @test
@@ -150,7 +148,6 @@ abstract class AbstractParserTestCase extends AbstractTestCase
     abstract public function provideNotSupportedColumnAndValue(): array;
 
     /**
-     * @param mixed $rawColumn Column from query parameters
      * @param mixed $rawValue Value from query parameters
      *
      * @test
