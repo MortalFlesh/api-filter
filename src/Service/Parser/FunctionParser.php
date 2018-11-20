@@ -7,9 +7,11 @@ use Lmc\ApiFilter\Constant\Filter;
 use Lmc\ApiFilter\Constant\Priority;
 use Lmc\ApiFilter\Service\FilterFactory;
 use Lmc\ApiFilter\Service\Functions;
-use Lmc\ApiFilter\Service\Parser\FunctionParser\ExplicitFunctionDefinitionFunctionParser;
+use Lmc\ApiFilter\Service\Parser\FunctionParser\ExplicitFunctionDefinitionByTupleParser;
+use Lmc\ApiFilter\Service\Parser\FunctionParser\ExplicitFunctionDefinitionInValueParser;
 use Lmc\ApiFilter\Service\Parser\FunctionParser\ExplicitFunctionDefinitionParser;
 use Lmc\ApiFilter\Service\Parser\FunctionParser\FunctionParserInterface;
+use Lmc\ApiFilter\Service\Parser\FunctionParser\ImplicitFunctionDefinitionByTupleParser;
 use MF\Collection\Immutable\Tuple;
 use MF\Collection\Mutable\Generic\Map;
 use MF\Collection\Mutable\Generic\PrioritizedCollection;
@@ -30,10 +32,12 @@ class FunctionParser extends AbstractParser
 
         $this->parsers = new PrioritizedCollection(FunctionParserInterface::class);
         $this->parsers->add(
-            new ExplicitFunctionDefinitionFunctionParser($filterFactory, $functions),
+            new ExplicitFunctionDefinitionInValueParser($filterFactory, $functions),
             Priority::HIGHEST
         );
         $this->parsers->add(new ExplicitFunctionDefinitionParser($filterFactory, $functions), Priority::HIGHER);
+        $this->parsers->add(new ExplicitFunctionDefinitionByTupleParser($filterFactory, $functions), Priority::LOW);
+        $this->parsers->add(new ImplicitFunctionDefinitionByTupleParser($filterFactory, $functions), Priority::LOWER);
     }
 
     public function setQueryParameters(array $queryParameters): void
@@ -53,23 +57,6 @@ class FunctionParser extends AbstractParser
             if ($parser->supports($rawColumn, $rawValue)) {
                 return true;
             }
-        }
-
-        // 3 is a function definition by tuple
-        if ($this->isTuple($rawColumn)) {
-            $tuple = Tuple::parse($rawColumn);
-
-            // is an explicit function definition by tuple
-            if ($tuple->first() === self::FUNCTION_COLUMN) {
-                return true;
-            }
-
-            // is an implicit function definition by tuple
-            foreach ($this->functions->getFunctionNamesByAllParameters($tuple->toArray()) as $functionName) {
-                return true;
-            }
-
-            return false;
         }
 
         // 4 is an implicit function definition by value
@@ -97,7 +84,7 @@ class FunctionParser extends AbstractParser
             }
         }
 
-        // 3 explicit function definitions
+        // 2? explicit function definitions
         if ($this->functions->isFunctionRegistered($rawColumn)) {
             yield from $this->parseFunction($rawColumn);
 
@@ -118,43 +105,6 @@ class FunctionParser extends AbstractParser
                 }
             }
         }
-
-        // 4 function definition by tuple
-        if ($this->isTuple($rawColumn)) {
-            Assertion::true($this->isTuple($rawValue), 'Function definition by a tuple must have a tuple value.');
-            $columns = Tuple::parse($rawColumn);
-            $values = Tuple::parse($rawValue, count($columns))->toArray();
-
-            // explicit function definition by tuple
-            if ($columns->first() === self::FUNCTION_COLUMN) {
-                $columns = $columns->toArray();
-
-                array_shift($columns);  // just get rid of the first parameter
-                $functionName = array_shift($values);
-
-                yield from $this->parseFunction($functionName);
-                foreach ($this->functions->getParametersFor($functionName) as $parameter) {
-                    yield from $this->parseFunctionParameter($parameter, array_shift($values));
-                }
-            } else {
-                // implicit function definition by tuple
-                $columns = $columns->toArray();
-
-                foreach ($this->functions->getFunctionNamesByAllParameters($columns) as $functionName) {
-                    yield from $this->parseFunction($functionName);
-                }
-
-                foreach ($columns as $parameter) {
-                    yield from $this->parseFunctionParameter($parameter, array_shift($values));
-                }
-            }
-        }
-    }
-
-    private function isThereAnyExplicitFunctionDefinition(array $queryParameters): bool
-    {
-        return !$this->isParsed(self::FUNCTION_COLUMN)
-            && array_key_exists(self::FUNCTION_COLUMN, $queryParameters);
     }
 
     private function isParsed(string $key): bool

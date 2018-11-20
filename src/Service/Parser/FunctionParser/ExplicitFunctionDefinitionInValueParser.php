@@ -4,7 +4,7 @@ namespace Lmc\ApiFilter\Service\Parser\FunctionParser;
 
 use Lmc\ApiFilter\Assertion;
 
-class ExplicitFunctionDefinitionFunctionParser extends AbstractFunctionParser
+class ExplicitFunctionDefinitionInValueParser extends AbstractFunctionParser
 {
     /**
      * @param string|array $rawValue Raw column value from query parameters

@@ -89,7 +89,7 @@ abstract class AbstractFunctionParser extends AbstractParser implements Function
 
     protected function parseFunction(string $functionName): iterable
     {
-        Assertion::true($this->alreadyParsedFunctions->containsKey($functionName), self::ERROR_MULTIPLE_FUNCTION_CALL);
+        Assertion::false($this->alreadyParsedFunctions->containsKey($functionName), self::ERROR_MULTIPLE_FUNCTION_CALL);
 
         $this->alreadyParsedFunctions[$functionName] = true;
 
@@ -107,5 +107,13 @@ abstract class AbstractFunctionParser extends AbstractParser implements Function
 
             yield $this->createFilter($parameter, Filter::FUNCTION_PARAMETER, $value);
         }
+    }
+
+    /**
+     * @param string|array $rawValue Raw column value from query parameters
+     */
+    protected function assertTupleValue($rawValue): void
+    {
+        Assertion::true($this->isTuple($rawValue), 'Function definition by a tuple must have a tuple value.');
     }
 }
