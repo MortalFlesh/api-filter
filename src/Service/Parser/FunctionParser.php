@@ -11,7 +11,6 @@ use MF\Collection\Immutable\Tuple;
 class FunctionParser extends AbstractParser
 {
     private const FUNCTION_COLUMN = 'fun';
-
     private const ERROR_MULTIPLE_FUNCTION_CALL = 'It is not allowed to call one function multiple times.';
 
     /** @var Functions */
@@ -39,7 +38,7 @@ class FunctionParser extends AbstractParser
         $this->isAllImplicitFunctionDefinitionsChecked = false;
     }
 
-    public function supports($rawColumn, $rawValue): bool
+    public function supports(string $rawColumn, $rawValue): bool
     {
         $queryParameters = $this->assertQueryParameters();
 
@@ -94,7 +93,7 @@ class FunctionParser extends AbstractParser
         return $this->queryParameters;
     }
 
-    public function parse($rawColumn, $rawValue): iterable
+    public function parse(string $rawColumn, $rawValue): iterable
     {
         $queryParameters = $this->assertQueryParameters();
 

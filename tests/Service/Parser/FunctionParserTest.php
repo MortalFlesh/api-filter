@@ -33,7 +33,7 @@ class FunctionParserTest extends AbstractParserTestCase
      * @test
      * @dataProvider provideParseableColumnAndValue
      */
-    public function shouldSupportColumnAndValue($rawColumn, $rawValue): void
+    public function shouldSupportColumnAndValue(string $rawColumn, $rawValue): void
     {
         $this->parser->setQueryParameters([$rawColumn => $rawValue]);
         parent::shouldSupportColumnAndValue($rawColumn, $rawValue);
@@ -46,7 +46,7 @@ class FunctionParserTest extends AbstractParserTestCase
      * @test
      * @dataProvider provideNotSupportedColumnAndValue
      */
-    public function shouldNotSupportColumnAndValue($rawColumn, $rawValue): void
+    public function shouldNotSupportColumnAndValue(string $rawColumn, $rawValue): void
     {
         $this->parser->setQueryParameters([$rawColumn => $rawValue]);
         parent::shouldNotSupportColumnAndValue($rawColumn, $rawValue);
@@ -72,7 +72,7 @@ class FunctionParserTest extends AbstractParserTestCase
      * @test
      * @dataProvider provideParseableColumnAndValue
      */
-    public function shouldParseColumnAndValue($rawColumn, $rawValue, array $expected): void
+    public function shouldParseColumnAndValue(string $rawColumn, $rawValue, array $expected): void
     {
         $this->parser->setQueryParameters([$rawColumn => $rawValue]);
         parent::shouldParseColumnAndValue($rawColumn, $rawValue, $expected);
