@@ -103,31 +103,6 @@ class FunctionParser extends AbstractParser
             }
         }
 
-        // all explicit function definitions by values
-        if ($this->isThereAnyExplicitFunctionDefinition($queryParameters)) {
-            $this->alreadyParsedQueryParameters[self::FUNCTION_COLUMN] = true;
-            $functionNames = $queryParameters[self::FUNCTION_COLUMN];
-
-            Assertion::isArray(
-                $functionNames,
-                'Explicit function definition by values must be an array of functions. %s given.'
-            );
-
-            foreach ($functionNames as $functionName) {
-                yield from $this->parseFunction($functionName);
-
-                foreach ($this->functions->getParametersFor($functionName) as $parameter) {
-                    Assertion::keyExists(
-                        $queryParameters,
-                        $parameter,
-                        sprintf('There is a missing parameter %s for a function %s.', $parameter, $functionName)
-                    );
-
-                    yield from $this->parseFunctionParameter($parameter, $queryParameters[$parameter]);
-                }
-            }
-        }
-
         // all implicit function definitions by values
         if (!$this->isAllImplicitFunctionDefinitionsChecked) {
             $this->isAllImplicitFunctionDefinitionsChecked = true;
