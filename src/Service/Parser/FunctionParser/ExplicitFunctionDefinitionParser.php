@@ -20,7 +20,7 @@ class ExplicitFunctionDefinitionParser extends AbstractFunctionParser
      */
     public function parseParameters(array $queryParameters, string $rawColumn, $rawValue): iterable
     {
-        if ($this->functions->isFunctionRegistered($rawColumn)) {
+        if (!$this->functions->isFunctionRegistered($rawColumn)) {
             return;
         }
 
