@@ -35,7 +35,7 @@ class ExplicitFunctionDefinitionParser extends AbstractFunctionParser
 
             yield from $this->parseFunctionParameter(array_shift($parameters), $rawValue);
         } else {
-            Assertion::true($this->isTuple($rawValue), 'Direct function definition must have a tuple value.');
+            $rawValue = $this->assertTupleValue($rawValue, 'Direct function definition must have a tuple value.');
 
             $values = Tuple::parse($rawValue, count($parameters))->toArray();
             foreach ($parameters as $parameter) {

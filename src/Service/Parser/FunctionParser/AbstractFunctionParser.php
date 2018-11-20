@@ -20,9 +20,9 @@ abstract class AbstractFunctionParser extends AbstractParser implements Function
     /** @var ?array */
     private $queryParameters;
     /** @var Map<string,bool>|IMap|null */
-    protected $alreadyParsedFunctions;
+    private $alreadyParsedFunctions;
     /** @var Map<string,bool>|IMap|null */
-    protected $alreadyParsedColumns;
+    private $alreadyParsedColumns;
 
     public function __construct(FilterFactory $filterFactory, Functions $functions)
     {
@@ -48,7 +48,7 @@ abstract class AbstractFunctionParser extends AbstractParser implements Function
         return $this->supportsParameters($this->assertQueryParameters(), $rawColumn, $rawValue);
     }
 
-    protected abstract function supportsParameters(array $assertQueryParameters, string $rawColumn, $rawValue): bool;
+    abstract protected function supportsParameters(array $assertQueryParameters, string $rawColumn, $rawValue): bool;
 
     private function assertQueryParameters(): array
     {
@@ -68,19 +68,7 @@ abstract class AbstractFunctionParser extends AbstractParser implements Function
     /**
      * @param string|array $rawValue Raw column value from query parameters
      */
-    protected abstract function parseParameters(array $queryParameters, string $rawColumn, $rawValue): iterable;
-
-    protected function isThereAnyExplicitFunctionDefinition(array $queryParameters): bool
-    {
-        return !$this->isColumnParsed(self::FUNCTION_COLUMN)
-            && array_key_exists(self::FUNCTION_COLUMN, $queryParameters);
-    }
-
-    protected function isColumnParsed(string $column): bool
-    {
-        return $this->alreadyParsedColumns !== null
-            && $this->alreadyParsedColumns->containsKey($column);
-    }
+    abstract protected function parseParameters(array $queryParameters, string $rawColumn, $rawValue): iterable;
 
     protected function markColumnAsParsed(string $column): void
     {
@@ -88,17 +76,9 @@ abstract class AbstractFunctionParser extends AbstractParser implements Function
         $this->alreadyParsedColumns[$column] = true;
     }
 
-    protected function assertParameterExists(array $queryParameters, string $parameter, string $functionName): void
-    {
-        Assertion::keyExists(
-            $queryParameters,
-            $parameter,
-            sprintf('There is a missing parameter %s for a function %s.', $parameter, $functionName)
-        );
-    }
-
     protected function parseFunction(string $functionName): iterable
     {
+        Assertion::notNull($this->alreadyParsedFunctions, 'Already parsed functions must be set before parsing.');
         Assertion::false($this->alreadyParsedFunctions->containsKey($functionName), self::ERROR_MULTIPLE_FUNCTION_CALL);
 
         $this->alreadyParsedFunctions[$functionName] = true;
@@ -119,11 +99,22 @@ abstract class AbstractFunctionParser extends AbstractParser implements Function
         }
     }
 
+    protected function isColumnParsed(string $column): bool
+    {
+        return $this->alreadyParsedColumns !== null
+            && $this->alreadyParsedColumns->containsKey($column);
+    }
+
     /**
      * @param string|array $rawValue Raw column value from query parameters
      */
-    protected function assertTupleValue($rawValue): void
+    protected function assertTupleValue($rawValue, string $errorMessage = null): string
     {
-        Assertion::true($this->isTuple($rawValue), 'Function definition by a tuple must have a tuple value.');
+        Assertion::true(
+            $this->isTuple($rawValue) && !is_array($rawValue),
+            $errorMessage ?? 'Function definition by a tuple must have a tuple value.'
+        );
+
+        return $rawValue;
     }
 }

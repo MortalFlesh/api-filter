@@ -39,4 +39,19 @@ class ExplicitFunctionDefinitionInValueParser extends AbstractFunctionParser
             }
         }
     }
+
+    private function isThereAnyExplicitFunctionDefinition(array $queryParameters): bool
+    {
+        return !$this->isColumnParsed(self::FUNCTION_COLUMN)
+            && array_key_exists(self::FUNCTION_COLUMN, $queryParameters);
+    }
+
+    private function assertParameterExists(array $queryParameters, string $parameter, string $functionName): void
+    {
+        Assertion::keyExists(
+            $queryParameters,
+            $parameter,
+            sprintf('There is a missing parameter %s for a function %s.', $parameter, $functionName)
+        );
+    }
 }

@@ -27,7 +27,6 @@ class FunctionParserTest extends AbstractParserTestCase
     }
 
     /**
-     * @param mixed $rawColumn Column from query parameters
      * @param mixed $rawValue Value from query parameters
      *
      * @test
@@ -40,7 +39,6 @@ class FunctionParserTest extends AbstractParserTestCase
     }
 
     /**
-     * @param mixed $rawColumn Column from query parameters
      * @param mixed $rawValue Value from query parameters
      *
      * @test
@@ -66,7 +64,6 @@ class FunctionParserTest extends AbstractParserTestCase
     }
 
     /**
-     * @param mixed $rawColumn Column from query parameters
      * @param mixed $rawValue Value from query parameters
      *
      * @test
