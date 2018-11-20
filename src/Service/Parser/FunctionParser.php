@@ -4,47 +4,56 @@ namespace Lmc\ApiFilter\Service\Parser;
 
 use Assert\Assertion;
 use Lmc\ApiFilter\Constant\Filter;
+use Lmc\ApiFilter\Constant\Priority;
 use Lmc\ApiFilter\Service\FilterFactory;
 use Lmc\ApiFilter\Service\Functions;
+use Lmc\ApiFilter\Service\Parser\FunctionParser\ExplicitFunctionDefinitionFunctionParser;
+use Lmc\ApiFilter\Service\Parser\FunctionParser\FunctionParserInterface;
 use MF\Collection\Immutable\Tuple;
+use MF\Collection\Mutable\Generic\Map;
+use MF\Collection\Mutable\Generic\PrioritizedCollection;
 
 class FunctionParser extends AbstractParser
 {
     private const FUNCTION_COLUMN = 'fun';
     private const ERROR_MULTIPLE_FUNCTION_CALL = 'It is not allowed to call one function multiple times.';
 
-    /** @var Functions */
-    private $functions;
-    /** @var ?array */
-    private $queryParameters;
-    /** @var ?array<string,bool> */
-    private $alreadyParsedFunctions;
-    /** @var ?array<string,bool> */
-    private $alreadyParsedQueryParameters;
+    /** @var bool */
+    private $isQueryParametersSet = false;
     /** @var ?bool */
     private $isAllImplicitFunctionDefinitionsChecked;
+    /** @var PrioritizedCollection|FunctionParserInterface[] */
+    private $parsers;
 
     public function __construct(FilterFactory $filterFactory, Functions $functions)
     {
         parent::__construct($filterFactory);
-        $this->functions = $functions;
+
+        $this->parsers = new PrioritizedCollection(FunctionParserInterface::class);
+        $this->parsers->add(
+            new ExplicitFunctionDefinitionFunctionParser($filterFactory, $functions),
+            Priority::HIGHEST
+        );
     }
 
     public function setQueryParameters(array $queryParameters): void
     {
-        $this->queryParameters = $queryParameters;
-        $this->alreadyParsedFunctions = [];
-        $this->alreadyParsedQueryParameters = [];
+        $this->isQueryParametersSet = true;
+        $alreadyParsedFunctions = new Map('string', 'bool');
+        $alreadyParsedQueryParameters = new Map('string', 'bool');
         $this->isAllImplicitFunctionDefinitionsChecked = false;
+
+        foreach ($this->parsers as $parser) {
+            $parser->setCommonValues($queryParameters, $alreadyParsedFunctions, $alreadyParsedQueryParameters);
+        }
     }
 
     public function supports(string $rawColumn, $rawValue): bool
     {
-        $queryParameters = $this->assertQueryParameters();
-
-        // is a function column for explicit function definition by values
-        if ($rawColumn === self::FUNCTION_COLUMN) {
-            return true;
+        foreach ($this->parsers as $parser) {
+            if ($parser->supports($rawColumn, $rawValue)) {
+                return true;
+            }
         }
 
         // is a function definition
@@ -86,16 +95,13 @@ class FunctionParser extends AbstractParser
         return false;
     }
 
-    private function assertQueryParameters(): array
-    {
-        Assertion::notNull($this->queryParameters, 'Query parameters must be set to FunctionParser.');
-
-        return $this->queryParameters;
-    }
-
     public function parse(string $rawColumn, $rawValue): iterable
     {
-        $queryParameters = $this->assertQueryParameters();
+        foreach($this->parsers as $parser) {
+            if ($parser->supports($rawColumn, $rawValue)) {
+                yield from $parser->parse($rawColumn, $rawValue);
+            }
+        }
 
         // all explicit function definitions by values
         if ($this->isThereAnyExplicitFunctionDefinition($queryParameters)) {
@@ -210,13 +216,13 @@ class FunctionParser extends AbstractParser
 
     private function isParsed(string $key): bool
     {
-        return is_array($this->alreadyParsedQueryParameters)
-            && array_key_exists($key, $this->alreadyParsedQueryParameters);
+        return $this->alreadyParsedQueryParameters !== null
+            && $this->alreadyParsedQueryParameters->containsKey($key);
     }
 
     private function parseFunction(string $functionName): iterable
     {
-        Assertion::keyNotExists($this->alreadyParsedFunctions, $functionName, self::ERROR_MULTIPLE_FUNCTION_CALL);
+        Assertion::true($this->alreadyParsedFunctions->containsKey($functionName), self::ERROR_MULTIPLE_FUNCTION_CALL);
 
         $this->alreadyParsedFunctions[$functionName] = true;
 
