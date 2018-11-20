@@ -2,8 +2,8 @@
 
 namespace Lmc\ApiFilter\Service;
 
-use Assert\Assertion;
 use Lmc\ApiFilter\Applicator\ApplicatorInterface;
+use Lmc\ApiFilter\Assertion;
 use Lmc\ApiFilter\Entity\Filterable;
 use Lmc\ApiFilter\Filter\FilterFunction;
 use Lmc\ApiFilter\Filter\FilterIn;

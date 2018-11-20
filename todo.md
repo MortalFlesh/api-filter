@@ -37,7 +37,7 @@ todo
     - _kouknout dolu na TODO_
     
     - FILTER FUNCTION
-        - FilterFunction                                    [feature/add-filter-function]
+        - FilterFunction                                    [PR]
             - *add test to FilterFactory*
         - FilterParameter
             - *add test to FilterFactory*
@@ -45,6 +45,7 @@ todo
         - applicator
     
     - REGISTER FUNCTION
+        - readme
         - register function
         - Functions
     

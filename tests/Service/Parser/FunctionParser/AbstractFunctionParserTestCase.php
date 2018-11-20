@@ -15,6 +15,7 @@ abstract class AbstractFunctionParserTestCase extends AbstractTestCase
         self::CASE_IMPLICIT_FUNCTION_DEFINITION_BY_VALUES,
         self::CASE_EXPLICIT_FUNCTION_DEFINITION_BY_TUPLE,
         self::CASE_IMPLICIT_FUNCTION_DEFINITION_BY_TUPLE,
+        self::CASE_FUNCTION_IN_FILTER_PARAMETER,
     ];
 
     protected const CASE_EXPLICIT_FUNCTION_DEFINITION = [
@@ -60,6 +61,16 @@ abstract class AbstractFunctionParserTestCase extends AbstractTestCase
     protected const CASE_IMPLICIT_FUNCTION_DEFINITION_BY_TUPLE = [
         'implicit function definition by tuple - fullName' => [
             ['(firstName,surname)' => '(Jon, Snow)'],
+            [
+                ['fullName', 'function', 'callable'],
+                ['firstName', 'function-parameter', 'Jon'],
+                ['surname', 'function-parameter', 'Snow'],
+            ],
+        ],
+    ];
+    protected const CASE_FUNCTION_IN_FILTER_PARAMETER = [
+        'function in filter parameter - fullName' => [
+            ['filter' => ['(fullName, Jon, Snow)']],
             [
                 ['fullName', 'function', 'callable'],
                 ['firstName', 'function-parameter', 'Jon'],
