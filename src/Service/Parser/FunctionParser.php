@@ -8,6 +8,7 @@ use Lmc\ApiFilter\Constant\Priority;
 use Lmc\ApiFilter\Service\FilterFactory;
 use Lmc\ApiFilter\Service\Functions;
 use Lmc\ApiFilter\Service\Parser\FunctionParser\ExplicitFunctionDefinitionFunctionParser;
+use Lmc\ApiFilter\Service\Parser\FunctionParser\FunctionDefinitionParser;
 use Lmc\ApiFilter\Service\Parser\FunctionParser\FunctionParserInterface;
 use MF\Collection\Immutable\Tuple;
 use MF\Collection\Mutable\Generic\Map;
@@ -20,8 +21,6 @@ class FunctionParser extends AbstractParser
 
     /** @var bool */
     private $isQueryParametersSet = false;
-    /** @var ?bool */
-    private $isAllImplicitFunctionDefinitionsChecked;
     /** @var PrioritizedCollection|FunctionParserInterface[] */
     private $parsers;
 
@@ -34,6 +33,7 @@ class FunctionParser extends AbstractParser
             new ExplicitFunctionDefinitionFunctionParser($filterFactory, $functions),
             Priority::HIGHEST
         );
+        $this->parsers->add(new FunctionDefinitionParser($filterFactory, $functions), Priority::HIGHER);
     }
 
     public function setQueryParameters(array $queryParameters): void
@@ -41,7 +41,6 @@ class FunctionParser extends AbstractParser
         $this->isQueryParametersSet = true;
         $alreadyParsedFunctions = new Map('string', 'bool');
         $alreadyParsedQueryParameters = new Map('string', 'bool');
-        $this->isAllImplicitFunctionDefinitionsChecked = false;
 
         foreach ($this->parsers as $parser) {
             $parser->setCommonValues($queryParameters, $alreadyParsedFunctions, $alreadyParsedQueryParameters);
@@ -56,12 +55,7 @@ class FunctionParser extends AbstractParser
             }
         }
 
-        // is a function definition
-        if (!$this->isTuple($rawColumn) && $this->functions->isFunctionRegistered($rawColumn)) {
-            return true;
-        }
-
-        // is a function definition by tuple
+        // 3 is a function definition by tuple
         if ($this->isTuple($rawColumn)) {
             $tuple = Tuple::parse($rawColumn);
 
@@ -78,7 +72,7 @@ class FunctionParser extends AbstractParser
             return false;
         }
 
-        // is an implicit function definition by value
+        // 4 is an implicit function definition by value
         foreach ($this->functions->getFunctionNamesByParameter($rawColumn) as $functionName) {
             // - are there all parameters for at least one of the functions?
             foreach ($this->functions->getParametersFor($functionName) as $parameter) {
@@ -97,39 +91,13 @@ class FunctionParser extends AbstractParser
 
     public function parse(string $rawColumn, $rawValue): iterable
     {
-        foreach($this->parsers as $parser) {
+        foreach ($this->parsers as $parser) {
             if ($parser->supports($rawColumn, $rawValue)) {
                 yield from $parser->parse($rawColumn, $rawValue);
             }
         }
 
-        // all implicit function definitions by values
-        if (!$this->isAllImplicitFunctionDefinitionsChecked) {
-            $this->isAllImplicitFunctionDefinitionsChecked = true;
-
-            foreach ($queryParameters as $column => $value) {
-                if ($this->isParsed($column)) {
-                    continue;
-                }
-
-                foreach ($this->functions->getFunctionNamesByParameter($column) as $functionName) {
-                    $parameters = $this->functions->getParametersFor($functionName);
-                    foreach ($parameters as $parameter) {
-                        if (!array_key_exists($parameter, $queryParameters)) {
-                            // skip all incomplete functions
-                            continue 2;
-                        }
-                    }
-
-                    yield from $this->parseFunction($functionName);
-                    foreach ($parameters as $parameter) {
-                        yield from $this->parseFunctionParameter($parameter, $queryParameters[$parameter]);
-                    }
-                }
-            }
-        }
-
-        // explicit function definitions
+        // 3 explicit function definitions
         if ($this->functions->isFunctionRegistered($rawColumn)) {
             yield from $this->parseFunction($rawColumn);
 
@@ -151,7 +119,7 @@ class FunctionParser extends AbstractParser
             }
         }
 
-        // function definition by tuple
+        // 4 function definition by tuple
         if ($this->isTuple($rawColumn)) {
             Assertion::true($this->isTuple($rawValue), 'Function definition by a tuple must have a tuple value.');
             $columns = Tuple::parse($rawColumn);

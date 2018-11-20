@@ -17,10 +17,8 @@ class ExplicitFunctionDefinitionFunctionParser extends AbstractFunctionParser
     /**
      * @param string|array $rawValue Raw column value from query parameters
      */
-    public function parse(string $rawColumn, $rawValue): iterable
+    public function parseParameters(array $queryParameters, string $rawColumn, $rawValue): iterable
     {
-        $queryParameters = $this->assertQueryParameters();
-
         if ($this->isThereAnyExplicitFunctionDefinition($queryParameters)) {
             $this->markColumnAsParsed(self::FUNCTION_COLUMN);
             $functionNames = $queryParameters[self::FUNCTION_COLUMN];

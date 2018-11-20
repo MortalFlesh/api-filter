@@ -40,7 +40,20 @@ abstract class AbstractFunctionParser extends AbstractParser implements Function
         $this->alreadyParsedColumns = $alreadyParsedColumns;
     }
 
-    protected function assertQueryParameters(): array
+    /**
+     * @param string|array $rawValue Raw column value from query parameters
+     */
+    final public function parse(string $rawColumn, $rawValue): iterable
+    {
+        yield from $this->parseParameters($this->assertQueryParameters(), $rawColumn, $rawValue);
+    }
+
+    /**
+     * @param string|array $rawValue Raw column value from query parameters
+     */
+    protected abstract function parseParameters(array $queryParameters, string $rawColumn, $rawValue): iterable;
+
+    private function assertQueryParameters(): array
     {
         Assertion::notNull($this->queryParameters, 'Query parameters must be set to FunctionParser.');
 
