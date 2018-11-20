@@ -8,8 +8,8 @@ use Doctrine\ORM\QueryBuilder;
 use Lmc\ApiFilter\Entity\Value;
 use Lmc\ApiFilter\Service\FilterFactory;
 use Lmc\ApiFilter\Service\Parser\Fixtures\SimpleFilter;
-use Mockery as m;
 use Mockery\Adapter\Phpunit\MockeryPHPUnitIntegration;
+use Mockery as m;
 use PHPUnit\Framework\TestCase;
 
 abstract class AbstractTestCase extends TestCase
