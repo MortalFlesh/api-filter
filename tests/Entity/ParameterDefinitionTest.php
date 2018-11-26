@@ -5,14 +5,14 @@ namespace Lmc\ApiFilter\Entity;
 use Lmc\ApiFilter\AbstractTestCase;
 use Lmc\ApiFilter\Exception\InvalidArgumentException;
 
-class ParameterTest extends AbstractTestCase
+class ParameterDefinitionTest extends AbstractTestCase
 {
     /**
      * @test
      */
     public function shouldCreateParameterWithDefaults(): void
     {
-        $parameter = new Parameter('foo');
+        $parameter = new ParameterDefinition('foo');
 
         $this->assertSame('foo', $parameter->getName());
         $this->assertSame('foo', $parameter->getColumn());
@@ -27,7 +27,7 @@ class ParameterTest extends AbstractTestCase
     public function shouldCreateParameterWithAllValues(): void
     {
         $defaultValue = new Value('boo');
-        $parameter = new Parameter('foo', 'gte', 'bar', $defaultValue);
+        $parameter = new ParameterDefinition('foo', 'gte', 'bar', $defaultValue);
 
         $this->assertSame('foo', $parameter->getName());
         $this->assertSame('bar', $parameter->getColumn());
@@ -42,7 +42,7 @@ class ParameterTest extends AbstractTestCase
      */
     public function shouldCreateParameterByArray(): void
     {
-        $parameter = Parameter::createFromArray(['foo', 'gte', 'bar', 'boo']);
+        $parameter = ParameterDefinition::fromArray(['foo', 'gte', 'bar', 'boo']);
 
         $this->assertSame('foo', $parameter->getName());
         $this->assertSame('bar', $parameter->getColumn());
@@ -57,7 +57,7 @@ class ParameterTest extends AbstractTestCase
      */
     public function shouldCreateParameterByArrayWithDefaults(): void
     {
-        $parameter = Parameter::createFromArray(['foo']);
+        $parameter = ParameterDefinition::fromArray(['foo']);
 
         $this->assertSame('foo', $parameter->getName());
         $this->assertSame('foo', $parameter->getColumn());
@@ -72,7 +72,7 @@ class ParameterTest extends AbstractTestCase
     public function shouldCreateParameterWithDefaultsAndDefaultValue(): void
     {
         $defaultValue = new Value('bar');
-        $parameter = new Parameter('foo', null, null, $defaultValue);
+        $parameter = new ParameterDefinition('foo', null, null, $defaultValue);
 
         $this->assertSame('foo', $parameter->getName());
         $this->assertSame('foo', $parameter->getColumn());
@@ -87,7 +87,7 @@ class ParameterTest extends AbstractTestCase
      */
     public function shouldCreateParameterByArrayWithDefaultsAndDefaultValue(): void
     {
-        $parameter = Parameter::createFromArray(['foo', null, null, 'bar']);
+        $parameter = ParameterDefinition::fromArray(['foo', null, null, 'bar']);
 
         $this->assertSame('foo', $parameter->getName());
         $this->assertSame('foo', $parameter->getColumn());
@@ -103,7 +103,7 @@ class ParameterTest extends AbstractTestCase
     public function shouldCreateParameterWithDefaultValueOnly(): void
     {
         $defaultValue = new Value('bar');
-        $parameter = Parameter::equalToDefaultValue('foo', $defaultValue);
+        $parameter = ParameterDefinition::equalToDefaultValue('foo', $defaultValue);
 
         $this->assertSame('foo', $parameter->getName());
         $this->assertSame('foo', $parameter->getColumn());
@@ -118,7 +118,7 @@ class ParameterTest extends AbstractTestCase
      */
     public function shouldNotGetDefaultValueIfNotSet(): void
     {
-        $parameter = new Parameter('foo');
+        $parameter = new ParameterDefinition('foo');
 
         $this->assertFalse($parameter->hasDefaultValue());
 

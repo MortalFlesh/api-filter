@@ -63,7 +63,7 @@ abstract class AbstractTestCase extends TestCase
         return $filterFactory;
     }
 
-    protected function createBlankCallback(string $name): callable
+    protected function createDummyCallback(string $name): callable
     {
         return function () use ($name): void {
             throw new \Exception(sprintf('Function "%s" is not meant to be called.', $name));

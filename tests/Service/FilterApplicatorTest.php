@@ -47,7 +47,7 @@ class FilterApplicatorTest extends AbstractTestCase
         array $functionsToRegister = []
     ): void {
         foreach ($functionsToRegister as $function) {
-            $function[] = $this->createBlankCallback('function in apply filter');
+            $function[] = $this->createDummyCallback('function in apply filter');
             $this->functions->register(...$function);
         }
 
@@ -196,7 +196,7 @@ class FilterApplicatorTest extends AbstractTestCase
         array $functionsToRegister = []
     ): void {
         foreach ($functionsToRegister as $function) {
-            $function[] = $this->createBlankCallback('function in apply filters');
+            $function[] = $this->createDummyCallback('function in apply filters');
             $this->functions->register(...$function);
         }
 
@@ -375,7 +375,7 @@ class FilterApplicatorTest extends AbstractTestCase
      */
     public function shouldNotApplyFilterFunctionWithoutAllParameters(): void
     {
-        $fullName = $this->createBlankCallback('fullName');
+        $fullName = $this->createDummyCallback('fullName');
         $this->functions->register('fullName', ['firstName', 'surname'], $fullName);
 
         $filterable = new Filterable('');

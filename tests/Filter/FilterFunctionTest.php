@@ -12,7 +12,7 @@ class FilterFunctionTest extends AbstractTestCase
      */
     public function shouldCreateFilterInWithProperDefaults(): void
     {
-        $filterFunction = new FilterFunction('fullName', new Value($this->createBlankCallback('fullName')));
+        $filterFunction = new FilterFunction('fullName', new Value($this->createDummyCallback('fullName')));
 
         $this->assertSame('fullName_fun', $filterFunction->getTitle());
     }

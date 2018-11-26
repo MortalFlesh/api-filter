@@ -223,7 +223,7 @@ class ApiFilter
      * Parameters might be defined as
      * - array of single values (names)
      * - array of array values (definitions)
-     * - array of Parameter (definitions)
+     * - array of ParameterDefinition
      *
      * @param array $parameters names of needed parameters (parameters will be passed to function in given order)
      * @throws ApiFilterException

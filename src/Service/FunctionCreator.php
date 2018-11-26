@@ -4,7 +4,7 @@ namespace Lmc\ApiFilter\Service;
 
 use Assert\Assertion;
 use Lmc\ApiFilter\Entity\Filterable;
-use Lmc\ApiFilter\Entity\Parameter;
+use Lmc\ApiFilter\Entity\ParameterDefinition;
 use Lmc\ApiFilter\Filter\FunctionParameter;
 use Lmc\ApiFilter\Filters\Filters;
 use Lmc\ApiFilter\Filters\FiltersInterface;
@@ -21,19 +21,19 @@ class FunctionCreator
         $this->filterFactory = $filterFactory;
     }
 
-    /** @return Parameter[]|IMap IMap<string, Parameter> */
+    /** @return ParameterDefinition[]|IMap IMap<string, Parameter> */
     public function normalizeParameters(array $parameters): IMap
     {
-        $normalizeParameters = new Map('string', Parameter::class);
+        $normalizeParameters = new Map('string', ParameterDefinition::class);
 
         foreach ($parameters as $parameter) {
             $this->assertParameter($parameter);
             if (is_string($parameter)) {
-                $parameter = new Parameter($parameter);
+                $parameter = new ParameterDefinition($parameter);
             } else {
-                $parameter = $parameter instanceof Parameter
+                $parameter = $parameter instanceof ParameterDefinition
                     ? $parameter
-                    : Parameter::createFromArray($parameter);
+                    : ParameterDefinition::fromArray($parameter);
             }
 
             $normalizeParameters = $normalizeParameters->set($parameter->getName(), $parameter);
@@ -45,12 +45,12 @@ class FunctionCreator
     /**
      * @see FunctionCreator::normalizeParameters()
      *
-     * @param Parameter[]|IMap $normalizedParameters IMap<string, Parameter>
+     * @param ParameterDefinition[]|IMap $normalizedParameters IMap<string, Parameter>
      */
     public function getParameterNames(IMap $normalizedParameters): array
     {
         return $normalizedParameters
-            ->filter(function ($name, Parameter $parameter) {
+            ->filter(function ($name, ParameterDefinition $parameter) {
                 return !$parameter->hasDefaultValue();
             })
             ->keys()
@@ -60,7 +60,7 @@ class FunctionCreator
     /**
      * @see FunctionCreator::normalizeParameters()
      *
-     * @param Parameter[]|IMap $normalizedParameters IMap<string, Parameter>
+     * @param ParameterDefinition[]|IMap $normalizedParameters IMap<string, Parameter>
      */
     public function createByParameters(FilterApplicator $applicator, IMap $normalizedParameters): callable
     {
@@ -77,7 +77,7 @@ class FunctionCreator
     private function assertParameter($parameter): void
     {
         Assertion::true(
-            is_string($parameter) || $parameter instanceof Parameter || is_array($parameter),
+            is_string($parameter) || $parameter instanceof ParameterDefinition || is_array($parameter),
             sprintf(
                 'Parameter for function creator must be either string, array or instance of Lmc\ApiFilter\Entity\Parameter but "%s" given.',
                 is_object($parameter) ? get_class($parameter) : gettype($parameter)
@@ -87,12 +87,12 @@ class FunctionCreator
 
     /**
      * @param FunctionParameter[] $parameters
-     * @param Parameter[]|IMap $parameterDefinitions IMap<string, Parameter>
+     * @param ParameterDefinition[]|IMap $parameterDefinitions IMap<string, Parameter>
      */
     private function createFiltersFromParameters(array $parameters, IMap $parameterDefinitions): FiltersInterface
     {
         $filters = new Filters();
-        /** @var Parameter $definition */
+        /** @var ParameterDefinition $definition */
         foreach ($parameterDefinitions as $definition) {
             if ($definition->hasDefaultValue()) {
                 $value = $definition->getDefaultValue();
@@ -127,8 +127,8 @@ class FunctionCreator
     /**
      * @see FunctionCreator::normalizeParameters()
      *
-     * @param Parameter[]|IMap $normalizedParameters IMap<string, Parameter>
-     * @return Parameter[]
+     * @param ParameterDefinition[]|IMap $normalizedParameters IMap<string, Parameter>
+     * @return ParameterDefinition[]
      */
     public function getParameterDefinitions(IMap $normalizedParameters): array
     {

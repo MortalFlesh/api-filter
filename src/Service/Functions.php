@@ -4,7 +4,7 @@ namespace Lmc\ApiFilter\Service;
 
 use Lmc\ApiFilter\Assertion;
 use Lmc\ApiFilter\Entity\Filterable;
-use Lmc\ApiFilter\Entity\Parameter;
+use Lmc\ApiFilter\Entity\ParameterDefinition;
 use Lmc\ApiFilter\Filter\FilterInterface;
 use Lmc\ApiFilter\Filters\FiltersInterface;
 use MF\Collection\Mutable\Generic\IMap;
@@ -16,7 +16,7 @@ class Functions
     private $functions;
     /** @var IMap<string,array> */
     private $functionParameters;
-    /** @var IMap<string,Parameter> */
+    /** @var IMap<string,ParameterDefinition> */
     private $parameterDefinitions;
     /** @var array<string,string> parameterName => functionName */
     private $registeredParameters;
@@ -141,7 +141,7 @@ class Functions
         return $this->functionParameters[$functionName];
     }
 
-    /** @return Parameter[] */
+    /** @return ParameterDefinition[] */
     public function getParameterDefinitionsFor(string $functionName): array
     {
         $this->assertRegistered($functionName);

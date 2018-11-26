@@ -85,7 +85,7 @@ abstract class AbstractFunctionParserTestCase extends AbstractTestCase
     protected function initFunctions(): Functions
     {
         $functions = new Functions();
-        $functions->register('fullName', ['firstName', 'surname'], $this->createBlankCallback('fullName'));
+        $functions->register('fullName', ['firstName', 'surname'], $this->createDummyCallback('fullName'));
 
         return $functions;
     }

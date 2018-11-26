@@ -4,7 +4,7 @@ namespace Lmc\ApiFilter\Service;
 
 use Lmc\ApiFilter\AbstractTestCase;
 use Lmc\ApiFilter\Applicator\SqlApplicator;
-use Lmc\ApiFilter\Entity\Parameter;
+use Lmc\ApiFilter\Entity\ParameterDefinition;
 use Lmc\ApiFilter\Entity\Value;
 use Lmc\ApiFilter\Filter\FunctionParameter;
 use Lmc\ApiFilter\Filters\Filters;
@@ -50,16 +50,16 @@ class FunctionCreatorTest extends AbstractTestCase
             'by array of names' => [['firstName', 'surname'], ['firstName', 'surname']],
             'by array of explicit definitions' => [[['firstName', 'eq'], ['surname', 'eq']], ['firstName', 'surname']],
             'by array of Parameters' => [
-                [new Parameter('firstName', 'eq'), new Parameter('surname', 'eq')],
+                [new ParameterDefinition('firstName', 'eq'), new ParameterDefinition('surname', 'eq')],
                 ['firstName', 'surname'],
             ],
             'by mixed' => [
-                [new Parameter('firstName', 'eq'), 'middleName', ['surname', 'eq']],
+                [new ParameterDefinition('firstName', 'eq'), 'middleName', ['surname', 'eq']],
                 ['firstName', 'middleName', 'surname'],
             ],
             'by mixed with defaults' => [
                 [
-                    Parameter::equalToDefaultValue('firstName', new Value('Jon')),
+                    ParameterDefinition::equalToDefaultValue('firstName', new Value('Jon')),
                     'middleName',
                     ['surname', null, null, 'Snow'],
                 ],
@@ -141,18 +141,18 @@ class FunctionCreatorTest extends AbstractTestCase
             ],
             'by parameters' => [
                 [
-                    new Parameter('ageFrom', 'gt', 'age'),
-                    new Parameter('ageTo', 'lt', 'age'),
-                    new Parameter('size', 'in'),
-                    new Parameter('gender', null, null, new Value('girl')),
+                    new ParameterDefinition('ageFrom', 'gt', 'age'),
+                    new ParameterDefinition('ageTo', 'lt', 'age'),
+                    new ParameterDefinition('size', 'in'),
+                    new ParameterDefinition('gender', null, null, new Value('girl')),
                 ],
             ],
             'by array + parameters' => [
                 [
                     ['ageFrom', 'gt', 'age'],
-                    new Parameter('ageTo', 'lt', 'age'),
+                    new ParameterDefinition('ageTo', 'lt', 'age'),
                     ['size', 'in'],
-                    Parameter::equalToDefaultValue('gender', new Value('girl')),
+                    ParameterDefinition::equalToDefaultValue('gender', new Value('girl')),
                 ],
             ],
         ];
@@ -215,7 +215,7 @@ class FunctionCreatorTest extends AbstractTestCase
     public function shouldGetParameterDefinitions(): void
     {
         $parameters = [['ageFrom', 'gt', 'age'], 'firstName'];
-        $expected = [new Parameter('ageFrom', 'gt', 'age'), new Parameter('firstName')];
+        $expected = [new ParameterDefinition('ageFrom', 'gt', 'age'), new ParameterDefinition('firstName')];
         $parameters = $this->functionCreator->normalizeParameters($parameters);
 
         $result = $this->functionCreator->getParameterDefinitions($parameters);

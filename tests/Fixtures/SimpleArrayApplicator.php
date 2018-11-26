@@ -4,7 +4,7 @@ namespace Lmc\ApiFilter\Fixtures;
 
 use Lmc\ApiFilter\Applicator\ApplicatorInterface;
 use Lmc\ApiFilter\Entity\Filterable;
-use Lmc\ApiFilter\Entity\Parameter;
+use Lmc\ApiFilter\Entity\ParameterDefinition;
 use Lmc\ApiFilter\Filter\FilterFunction;
 use Lmc\ApiFilter\Filter\FilterIn;
 use Lmc\ApiFilter\Filter\FilterInterface;
@@ -118,7 +118,7 @@ class SimpleArrayApplicator implements ApplicatorInterface
      * @see applyFilterFunction()
      *
      * @param FunctionParameter[] $parameters
-     * @param Parameter[] $parametersDefinitions
+     * @param ParameterDefinition[] $parametersDefinitions
      */
     public function getPreparedValuesForFunction(array $parameters, array $parametersDefinitions = []): array
     {

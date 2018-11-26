@@ -6,7 +6,7 @@ use Lmc\ApiFilter\Assertion;
 use Lmc\ApiFilter\Constant\Filter;
 use Lmc\ApiFilter\Filter\FunctionParameter;
 
-class Parameter
+class ParameterDefinition
 {
     /** @var string */
     private $name;
@@ -22,7 +22,7 @@ class Parameter
         return new self($name, null, null, $defaultValue);
     }
 
-    public static function createFromArray(array $parameters): self
+    public static function fromArray(array $parameters): self
     {
         if (count($parameters) === 4) {
             $defaultValue = array_pop($parameters);

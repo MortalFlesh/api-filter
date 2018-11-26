@@ -21,13 +21,13 @@ class FunctionParserTest extends AbstractParserTestCase
 
         $this->parser = new FunctionParser($this->mockFilterFactory(), $this->functions);
 
-        $this->functions->register('fullName', ['firstName', 'surname'], $this->createBlankCallback('fullName'));
+        $this->functions->register('fullName', ['firstName', 'surname'], $this->createDummyCallback('fullName'));
         $this->functions->register(
             'perfectWife',
             ['ageFrom', 'ageTo', 'size'],
-            $this->createBlankCallback('perfectWife')
+            $this->createDummyCallback('perfectWife')
         );
-        $this->functions->register('sql', ['query'], $this->createBlankCallback('sql'));
+        $this->functions->register('sql', ['query'], $this->createDummyCallback('sql'));
     }
 
     /**
@@ -494,6 +494,6 @@ class FunctionParserTest extends AbstractParserTestCase
         $this->expectException(\InvalidArgumentException::class);
         $this->expectExceptionMessage('There is already a function "sql" with parameter "query" registered. Parameters must be unique.');
 
-        $this->functions->register('sql2', ['query'], $this->createBlankCallback('sql2'));
+        $this->functions->register('sql2', ['query'], $this->createDummyCallback('sql2'));
     }
 }

@@ -3,7 +3,7 @@
 namespace Lmc\ApiFilter\Applicator;
 
 use Lmc\ApiFilter\Entity\Filterable;
-use Lmc\ApiFilter\Entity\Parameter;
+use Lmc\ApiFilter\Entity\ParameterDefinition;
 use Lmc\ApiFilter\Filter\FilterFunction;
 use Lmc\ApiFilter\Filter\FilterInterface;
 use Lmc\ApiFilter\Filter\FunctionParameter;
@@ -110,7 +110,7 @@ abstract class AbstractApplicator implements ApplicatorInterface
      * @see applyFilterFunction()
      *
      * @param FunctionParameter[] $parameters
-     * @param Parameter[] $parametersDefinitions
+     * @param ParameterDefinition[] $parametersDefinitions
      */
     public function getPreparedValuesForFunction(array $parameters, array $parametersDefinitions = []): array
     {
@@ -134,7 +134,7 @@ abstract class AbstractApplicator implements ApplicatorInterface
 
     /**
      * @param FunctionParameter[] $parameters
-     * @param Parameter[] $parametersDefinitions
+     * @param ParameterDefinition[] $parametersDefinitions
      */
     private function getPreparedValuesByDefinitions(array $parameters, array $parametersDefinitions): array
     {

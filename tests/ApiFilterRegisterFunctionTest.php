@@ -5,7 +5,7 @@ namespace Lmc\ApiFilter;
 use Doctrine\ORM\QueryBuilder;
 use Lmc\ApiFilter\Applicator\SqlApplicator;
 use Lmc\ApiFilter\Constant\Priority;
-use Lmc\ApiFilter\Entity\Parameter;
+use Lmc\ApiFilter\Entity\ParameterDefinition;
 use Lmc\ApiFilter\Entity\Value;
 use Lmc\ApiFilter\Exception\ApiFilterException;
 use Lmc\ApiFilter\Filter\FunctionParameter;
@@ -52,21 +52,21 @@ class ApiFilterRegisterFunctionTest extends AbstractTestCase
             // functionName, parameters, queryParameters, expectedDQL, expectedPreparedValues
             'implicit equals' => [
                 'fullName',
-                ['firstName', new Parameter('surname')],
+                ['firstName', new ParameterDefinition('surname')],
                 ['fullName' => '(Jon,Snow)'],
                 ['t.firstName = :firstName_fun', 't.surname = :surname_fun'],
                 ['firstName_fun' => 'Jon', 'surname_fun' => 'Snow'],
             ],
             'explicit equals' => [
                 'fullName',
-                [['firstName', 'eq'], new Parameter('surname', 'eq')],
+                [['firstName', 'eq'], new ParameterDefinition('surname', 'eq')],
                 ['fullName' => '(Jon,Snow)'],
                 ['t.firstName = :firstName_fun', 't.surname = :surname_fun'],
                 ['firstName_fun' => 'Jon', 'surname_fun' => 'Snow'],
             ],
             'explicit between (with mapping to column)' => [
                 'inAge',
-                [['ageFrom', 'gt', 'age'], new Parameter('ageTo', 'lt', 'age')],
+                [['ageFrom', 'gt', 'age'], new ParameterDefinition('ageTo', 'lt', 'age')],
                 ['inAge' => '(18,30)'],
                 ['t.age > :ageFrom_fun', 't.age < :ageTo_fun'],
                 ['ageFrom_fun' => 18, 'ageTo_fun' => 30],
@@ -81,9 +81,9 @@ class ApiFilterRegisterFunctionTest extends AbstractTestCase
             'explicit with defaults - by parameters' => [
                 'girlInAge',
                 [
-                    new Parameter('ageFrom', 'gt', 'age'),
-                    new Parameter('ageTo', 'lt', 'age'),
-                    new Parameter('gender', null, null, new Value('female')),
+                    new ParameterDefinition('ageFrom', 'gt', 'age'),
+                    new ParameterDefinition('ageTo', 'lt', 'age'),
+                    new ParameterDefinition('gender', null, null, new Value('female')),
                 ],
                 ['girlInAge' => '(18,30)'],
                 ['t.age > :ageFrom_fun', 't.age < :ageTo_fun', 't.gender = :gender_fun'],
@@ -93,8 +93,8 @@ class ApiFilterRegisterFunctionTest extends AbstractTestCase
                 'girlInAge',
                 [
                     ['ageFrom', 'gt', 'age'],
-                    new Parameter('ageTo', 'lt', 'age'),
-                    Parameter::equalToDefaultValue('gender', new Value('female')),
+                    new ParameterDefinition('ageTo', 'lt', 'age'),
+                    ParameterDefinition::equalToDefaultValue('gender', new Value('female')),
                 ],
                 ['girlInAge' => '(18,30)'],
                 ['t.age > :ageFrom_fun', 't.age < :ageTo_fun', 't.gender = :gender_fun'],

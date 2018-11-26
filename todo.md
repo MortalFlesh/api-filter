@@ -37,11 +37,24 @@ todo
     - _kouknout dolu na TODO_
     
     - FILTER FUNCTION
-        - FilterFunction                                    [PR]
+        - FilterFunction                                    [merged]
+        - FilterParameter                                   [merged]
+        - FilterFactory                                     [merged]
             - *add test to FilterFactory*
-        - FilterParameter
-            - *add test to FilterFactory*
+        - Entity/Parameter                                  [PR]
+        - Functions                                         [preparing - waiting for Parameter]
+            - **posilat rovnou vsechny metody???**
+            - feature/add-functions-collection
+            - *add test*
         - FunctionParser
+            - `Abstract` + base stuff                       [preparing - waiting for Functions]
+                - feature/add-base-function-parser
+            - `ExplicitFunctionDefinitionInValueParser`
+            - `ExplicitFunctionDefinitionParser`
+            - `ImplicitFunctionDefinitionByValueParser`
+            - `ExplicitFunctionDefinitionByTupleParser`
+            - `ImplicitFunctionDefinitionByTupleParser`
+            - `FunctionInFilterParameterParser`
         - applicator
     
     - REGISTER FUNCTION
