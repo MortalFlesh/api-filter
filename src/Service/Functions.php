@@ -60,35 +60,18 @@ class Functions
         }
     }
 
-    /** @param FiltersInterface|FilterInterface[] $filters */
-    public function execute(string $functionName, FiltersInterface $filters, Filterable $filterable): Filterable
+    public function getFunction(string $functionName): callable
     {
         $this->assertRegistered($functionName);
-        $function = $this->functions[$functionName];
-        $parameters = $this->functionParameters[$functionName];
 
-        $functionParameters = $filters->filterByColumns($parameters);
-        $this->assertFiltersByParameters($parameters, $functionParameters);
-
-        $applied = $function($filterable->getValue(), ...$functionParameters);
-
-        return new Filterable($applied);
+        return $this->functions[$functionName];
     }
 
     private function assertRegistered(string $functionName): void
     {
         Assertion::true(
-            $this->functions->containsKey($functionName),
+            $this->isFunctionRegistered($functionName),
             sprintf('Function "%s" is not registered.', $functionName)
-        );
-    }
-
-    private function assertFiltersByParameters(array $parameters, FiltersInterface $filterByParameters): void
-    {
-        Assertion::same(
-            count($filterByParameters),
-            count($parameters),
-            'There are not filters (%s) for parameters (%s).'
         );
     }
 
@@ -127,13 +110,6 @@ class Functions
         return $array;
     }
 
-    public function getFunction(string $functionName): callable
-    {
-        $this->assertRegistered($functionName);
-
-        return $this->functions[$functionName];
-    }
-
     public function getParametersFor(string $functionName): array
     {
         $this->assertRegistered($functionName);
@@ -147,5 +123,29 @@ class Functions
         $this->assertRegistered($functionName);
 
         return $this->parameterDefinitions[$functionName];
+    }
+
+    /** @param FiltersInterface|FilterInterface[] $filters */
+    public function execute(string $functionName, FiltersInterface $filters, Filterable $filterable): Filterable
+    {
+        $this->assertRegistered($functionName);
+        $function = $this->functions[$functionName];
+        $parameters = $this->functionParameters[$functionName];
+
+        $functionParameters = $filters->filterByColumns($parameters);
+        $this->assertFiltersByParameters($parameters, $functionParameters);
+
+        $applied = $function($filterable->getValue(), ...$functionParameters);
+
+        return new Filterable($applied);
+    }
+
+    private function assertFiltersByParameters(array $parameters, FiltersInterface $filterByParameters): void
+    {
+        Assertion::same(
+            count($filterByParameters),
+            count($parameters),
+            'There are not filters (%s) for parameters (%s).'
+        );
     }
 }

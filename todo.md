@@ -41,21 +41,23 @@ todo
         - FilterParameter                                   [merged]
         - FilterFactory                                     [merged]
             - *add test to FilterFactory*
-        - Entity/Parameter                                  [PR]
-        - Functions                                         [preparing - waiting for Parameter]
-            - **posilat rovnou vsechny metody???**
-            - feature/add-functions-collection
-            - *add test*
+        - Entity/Parameter                                  [merged]
+        - Functions
+            - `register` + `get`                            [PR]
         - FunctionParser
             - `Abstract` + base stuff                       [preparing - waiting for Functions]
                 - feature/add-base-function-parser
             - `ExplicitFunctionDefinitionInValueParser`
+                + `Functions::getParametersFor()` + test
             - `ExplicitFunctionDefinitionParser`
             - `ImplicitFunctionDefinitionByValueParser`
+                + `Functions::getFunctionNamesByParameter()` + test
             - `ExplicitFunctionDefinitionByTupleParser`
             - `ImplicitFunctionDefinitionByTupleParser`
+                + `Functions::getFunctionNamesByAllParameters()` + test
             - `FunctionInFilterParameterParser`
         - applicator
+            + `Functions::getParameterDefinitionsFor()` + test
     
     - REGISTER FUNCTION
         - readme
@@ -68,6 +70,7 @@ todo
         - declare function
     
     - execute function
+        + `Functions::execute` + test
     - apply function
     
     - pridat moznost i z `?filter[]=(spot,common,all)`      [todo]
