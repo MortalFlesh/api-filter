@@ -12,8 +12,6 @@ use MF\Collection\Mutable\Generic\Map;
 
 abstract class AbstractFunctionParser extends AbstractParser implements FunctionParserInterface
 {
-    protected const COLUMN_FUNCTION = 'fun';
-    protected const COLUMN_FILTER = 'filter';
     private const ERROR_MULTIPLE_FUNCTION_CALL = 'It is not allowed to call one function multiple times.';
 
     /** @var Functions */
@@ -42,7 +40,7 @@ abstract class AbstractFunctionParser extends AbstractParser implements Function
     }
 
     /**
-     * @param string|array $rawValue Raw column value from query parameters
+     * @param string|array $rawValue Raw value from query parameters
      */
     final public function supports(string $rawColumn, $rawValue): bool
     {
@@ -59,7 +57,7 @@ abstract class AbstractFunctionParser extends AbstractParser implements Function
     }
 
     /**
-     * @param string|array $rawValue Raw column value from query parameters
+     * @param string|array $rawValue Raw value from query parameters
      */
     final public function parse(string $rawColumn, $rawValue): iterable
     {
@@ -67,7 +65,7 @@ abstract class AbstractFunctionParser extends AbstractParser implements Function
     }
 
     /**
-     * @param string|array $rawValue Raw column value from query parameters
+     * @param string|array $rawValue Raw value from query parameters
      */
     abstract protected function parseParameters(array $queryParameters, string $rawColumn, $rawValue): iterable;
 
@@ -91,12 +89,12 @@ abstract class AbstractFunctionParser extends AbstractParser implements Function
         );
     }
 
-    protected function parseFunctionParameter(string $parameter, $value): iterable
+    protected function parseFunctionParameter(string $parameter, $rawValue): iterable
     {
         if (!$this->isColumnParsed($parameter)) {
             $this->alreadyParsedColumns[$parameter] = true;
 
-            yield $this->createFilter($parameter, Filter::FUNCTION_PARAMETER, $value);
+            yield $this->createFilter($parameter, Filter::FUNCTION_PARAMETER, $rawValue);
         }
     }
 
@@ -107,7 +105,7 @@ abstract class AbstractFunctionParser extends AbstractParser implements Function
     }
 
     /**
-     * @param string|array $rawValue Raw column value from query parameters
+     * @param string|array $rawValue Raw value from query parameters
      */
     protected function assertTupleValue($rawValue, string $errorMessage = null): string
     {

@@ -120,7 +120,7 @@ class ApiFilterRegisterFunctionTest extends AbstractTestCase
         $expectedPreparedValues = [
             'ageFrom_fun' => 18,
             'ageTo_fun' => 30,
-            'size_fun' => ['DD', 'D'],
+            'size_fun' => ['A4', 'A5'],
             'firstName_eq' => 'Foo',
             'zone_fun' => 'all',
             'bucket_fun' => 'common',
@@ -128,7 +128,7 @@ class ApiFilterRegisterFunctionTest extends AbstractTestCase
 
         $this->apiFilter
             ->declareFunction(
-                'perfectWife',
+                'perfectBook',
                 [
                     ['ageFrom', 'gt', 'age'],
                     ['ageTo', 'lt', 'age'],
@@ -158,21 +158,21 @@ class ApiFilterRegisterFunctionTest extends AbstractTestCase
             // queryParameters
             'functions' => [
                 [
-                    'perfectWife' => '(18, 30, [DD; D])',
+                    'perfectBook' => '(18, 30, [A4; A5])',
                     'firstName' => 'Foo',
                     'spot' => '(all,common)',
                 ],
             ],
             'implicit - tuples (with different order of parameters in tuple)' => [
                 [
-                    '(ageTo,ageFrom,size)' => '(30, 18, [DD; D])',
+                    '(ageTo,ageFrom,size)' => '(30, 18, [A4; A5])',
                     'firstName' => 'Foo',
                     '(zone,bucket)' => '(all,common)',
                 ],
             ],
             'explicit - tuples' => [
                 [
-                    '(fun,ageFrom,ageTo,size)' => '(perfectWife, 18, 30, [DD; D])',
+                    '(fun,ageFrom,ageTo,size)' => '(perfectBook, 18, 30, [A4; A5])',
                     'firstName' => 'Foo',
                     '(fun,zone,bucket)' => '(spot, all, common)',
                 ],
@@ -184,18 +184,18 @@ class ApiFilterRegisterFunctionTest extends AbstractTestCase
                     'ageFrom' => 18,
                     'ageTo' => 30,
                     'zone' => 'all',
-                    'size' => ['DD', 'D'],
+                    'size' => ['A4', 'A5'],
                 ],
             ],
             'explicit - values' => [
                 [
-                    'fun' => ['perfectWife', 'spot'],
+                    'fun' => ['perfectBook', 'spot'],
                     'firstName' => 'Foo',
                     'bucket' => 'common',
                     'ageFrom' => 18,
                     'ageTo' => 30,
                     'zone' => 'all',
-                    'size' => ['DD', 'D'],
+                    'size' => ['A4', 'A5'],
                 ],
             ],
         ];

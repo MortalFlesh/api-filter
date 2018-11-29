@@ -8,7 +8,7 @@ use MF\Collection\Immutable\Tuple;
 class ExplicitFunctionDefinitionParser extends AbstractFunctionParser
 {
     /**
-     * @param string|array $rawValue Raw column value from query parameters
+     * @param string|array $rawValue Raw value from query parameters
      */
     public function supportsParameters(array $queryParameters, string $rawColumn, $rawValue): bool
     {
@@ -16,7 +16,7 @@ class ExplicitFunctionDefinitionParser extends AbstractFunctionParser
     }
 
     /**
-     * @param string|array $rawValue Raw column value from query parameters
+     * @param string|array $rawValue Raw value from query parameters
      */
     public function parseParameters(array $queryParameters, string $rawColumn, $rawValue): iterable
     {

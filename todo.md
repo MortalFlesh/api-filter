@@ -43,19 +43,26 @@ todo
             - *add test to FilterFactory*
         - Entity/Parameter                                  [merged]
         - Functions
-            - `register` + `get`                            [PR]
+            - `register` + `get`                            [merged]
         - FunctionParser
             - `Abstract` + base stuff                       [preparing - waiting for Functions]
                 - feature/add-base-function-parser
             - `ExplicitFunctionDefinitionInValueParser`
+                + `AbstractFunctionParser::markColumnAsParsed()`
                 + `Functions::getParametersFor()` + test
+                + `FunctionParserTest::shouldNotCallOneFunctionTwiceByDifferentDefinitions()`
+                + `FunctionParserTest::shouldNotParseFunctionByExplicitValueDefinition()`
             - `ExplicitFunctionDefinitionParser`
+                + `FunctionParserTest::shouldNotParseFunctionDefinedBadly()`
+                + `FunctionParserTest::shouldNotCallOneFunctionTwice()`
             - `ImplicitFunctionDefinitionByValueParser`
                 + `Functions::getFunctionNamesByParameter()` + test
             - `ExplicitFunctionDefinitionByTupleParser`
+                + `AbstractFunctionParser::assertTupleValue()`
             - `ImplicitFunctionDefinitionByTupleParser`
                 + `Functions::getFunctionNamesByAllParameters()` + test
             - `FunctionInFilterParameterParser`
+            - update QueryParameterParserTest
         - applicator
             + `Functions::getParameterDefinitionsFor()` + test
     

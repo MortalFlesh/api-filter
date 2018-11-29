@@ -81,21 +81,21 @@ class ApiFilterTest extends AbstractTestCase
                 'SELECT * FROM table WHERE 1 AND title = :title_eq AND value > :value_gt',
                 ['title_eq' => 'foo', 'value_gt' => '10'],
             ],
-            'age[gt]=18&age[lt]=30&size[IN][]=DD&size[IN][]=D' => [
-                ['age' => ['gt' => 18, 'lt' => 30], 'size' => ['in' => ['DD', 'D']]],
+            'age[gt]=18&age[lt]=30&size[IN][]=A4&size[IN][]=A5' => [
+                ['age' => ['gt' => 18, 'lt' => 30], 'size' => ['in' => ['A4', 'A5']]],
                 'SELECT * FROM table',
                 'SELECT * FROM table WHERE 1 AND age > :age_gt AND age < :age_lt AND size IN (:size_in_0, :size_in_1)',
-                ['age_gt' => 18, 'age_lt' => 30, 'size_in_0' => 'DD', 'size_in_1' => 'D'],
+                ['age_gt' => 18, 'age_lt' => 30, 'size_in_0' => 'A4', 'size_in_1' => 'A5'],
             ],
-            '(age[gt],age[lt],size)=(18, 30, [DD; D])' => [
-                ['(age[gt],age[lt],size)' => '(18, 30, [DD; D])'],
+            '(age[gt],age[lt],size)=(18, 30, [A4; A5])' => [
+                ['(age[gt],age[lt],size)' => '(18, 30, [A4; A5])'],
                 'SELECT * FROM table',
                 'SELECT * FROM table WHERE 1 AND age > :age_gt AND age < :age_lt AND size IN (:size_in_0, :size_in_1)',
-                ['age_gt' => 18, 'age_lt' => 30, 'size_in_0' => 'DD', 'size_in_1' => 'D'],
+                ['age_gt' => 18, 'age_lt' => 30, 'size_in_0' => 'A4', 'size_in_1' => 'A5'],
             ],
-            '(age[gt],age[lt],size)=(18, 30, [DD; D])&firstName=Foo&(zone,bucket)[eq]=(all,common)' => [
+            '(age[gt],age[lt],size)=(18, 30, [A4; A5])&firstName=Foo&(zone,bucket)[eq]=(all,common)' => [
                 [
-                    '(age[gt],age[lt],size)' => '(18, 30, [DD; D])',
+                    '(age[gt],age[lt],size)' => '(18, 30, [A4; A5])',
                     'firstName' => 'Foo',
                     '(zone,bucket)' => ['eq' => '(all,common)'],
                 ],
@@ -107,8 +107,8 @@ class ApiFilterTest extends AbstractTestCase
                 [
                     'age_gt' => 18,
                     'age_lt' => 30,
-                    'size_in_0' => 'DD',
-                    'size_in_1' => 'D',
+                    'size_in_0' => 'A4',
+                    'size_in_1' => 'A5',
                     'firstName_eq' => 'Foo',
                     'zone_eq' => 'all',
                     'bucket_eq' => 'common',
@@ -190,19 +190,19 @@ class ApiFilterTest extends AbstractTestCase
                 ['t.title = :title_eq', 't.value > :value_gt'],
                 ['title_eq' => 'foo', 'value_gt' => '10'],
             ],
-            'age[gt]=18&age[lt]=30&size[IN][]=DD&size[IN][]=D' => [
-                ['age' => ['gt' => 18, 'lt' => 30], 'size' => ['in' => ['DD', 'D']]],
+            'age[gt]=18&age[lt]=30&size[IN][]=A4&size[IN][]=A5' => [
+                ['age' => ['gt' => 18, 'lt' => 30], 'size' => ['in' => ['A4', 'A5']]],
                 ['t.age > :age_gt', 't.age < :age_lt', 't.size IN (:size_in)'],
-                ['age_gt' => 18, 'age_lt' => 30, 'size_in' => ['DD', 'D']],
+                ['age_gt' => 18, 'age_lt' => 30, 'size_in' => ['A4', 'A5']],
             ],
-            '(age[gt],age[lt],size)=(18, 30, [DD; D])' => [
-                ['(age[gt],age[lt],size)' => '(18, 30, [DD; D])'],
+            '(age[gt],age[lt],size)=(18, 30, [A4; A5])' => [
+                ['(age[gt],age[lt],size)' => '(18, 30, [A4; A5])'],
                 ['t.age > :age_gt', 't.age < :age_lt', 't.size IN (:size_in)'],
-                ['age_gt' => 18, 'age_lt' => 30, 'size_in' => ['DD', 'D']],
+                ['age_gt' => 18, 'age_lt' => 30, 'size_in' => ['A4', 'A5']],
             ],
-            '(age[gt],age[lt],size)=(18, 30, [DD; D])&firstName=Foo&(zone,bucket)[eq]=(all,common)' => [
+            '(age[gt],age[lt],size)=(18, 30, [A4; A5])&firstName=Foo&(zone,bucket)[eq]=(all,common)' => [
                 [
-                    '(age[gt],age[lt],size)' => '(18, 30, [DD; D])',
+                    '(age[gt],age[lt],size)' => '(18, 30, [A4; A5])',
                     'firstName' => 'Foo',
                     '(zone,bucket)' => ['eq' => '(all,common)'],
                 ],
@@ -217,7 +217,7 @@ class ApiFilterTest extends AbstractTestCase
                 [
                     'age_gt' => 18,
                     'age_lt' => 30,
-                    'size_in' => ['DD', 'D'],
+                    'size_in' => ['A4', 'A5'],
                     'firstName_eq' => 'Foo',
                     'zone_eq' => 'all',
                     'bucket_eq' => 'common',

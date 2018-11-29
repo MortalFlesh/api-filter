@@ -23,9 +23,9 @@ class FunctionParserTest extends AbstractParserTestCase
 
         $this->functions->register('fullName', ['firstName', 'surname'], $this->createDummyCallback('fullName'));
         $this->functions->register(
-            'perfectWife',
+            'perfectBook',
             ['ageFrom', 'ageTo', 'size'],
-            $this->createDummyCallback('perfectWife')
+            $this->createDummyCallback('perfectBook')
         );
         $this->functions->register('sql', ['query'], $this->createDummyCallback('sql'));
     }
@@ -112,24 +112,24 @@ class FunctionParserTest extends AbstractParserTestCase
                     ['surname', 'function-parameter', 'Snow'],
                 ],
             ],
-            'tuple column + tuple value - implicit perfectWife by tuple' => [
+            'tuple column + tuple value - implicit perfectBook by tuple' => [
                 '(ageFrom, ageTo, size)',
-                '(18, 30, [DD; D])',
+                '(18, 30, [A4; A5])',
                 [
-                    ['perfectWife', 'function', 'callable'],
+                    ['perfectBook', 'function', 'callable'],
                     ['ageFrom', 'function-parameter', 18],
                     ['ageTo', 'function-parameter', 30],
-                    ['size', 'function-parameter', ['DD', 'D']],
+                    ['size', 'function-parameter', ['A4', 'A5']],
                 ],
             ],
-            'tuple column + tuple value - explicit perfectWife by tuple' => [
+            'tuple column + tuple value - explicit perfectBook by tuple' => [
                 '(fun, ageFrom, ageTo, size)',
-                '(perfectWife, 18, 30, [DD; D])',
+                '(perfectBook, 18, 30, [A4; A5])',
                 [
-                    ['perfectWife', 'function', 'callable'],
+                    ['perfectBook', 'function', 'callable'],
                     ['ageFrom', 'function-parameter', 18],
                     ['ageTo', 'function-parameter', 30],
-                    ['size', 'function-parameter', ['DD', 'D']],
+                    ['size', 'function-parameter', ['A4', 'A5']],
                 ],
             ],
             'scalar column + scalar value - sql' => [
@@ -262,60 +262,60 @@ class FunctionParserTest extends AbstractParserTestCase
             ],
             // multiple functions
             'multiple functions' => [
-                ['fullName' => '(Jon, Snow)', 'perfectWife' => '(18, 30, [DD; D])'],
+                ['fullName' => '(Jon, Snow)', 'perfectBook' => '(18, 30, [A4; A5])'],
                 [
                     ['fullName', 'function', 'callable'],
                     ['firstName', 'function-parameter', 'Jon'],
                     ['surname', 'function-parameter', 'Snow'],
-                    ['perfectWife', 'function', 'callable'],
+                    ['perfectBook', 'function', 'callable'],
                     ['ageFrom', 'function-parameter', 18],
                     ['ageTo', 'function-parameter', 30],
-                    ['size', 'function-parameter', ['DD', 'D']],
+                    ['size', 'function-parameter', ['A4', 'A5']],
                 ],
             ],
             'multiple - implicit - tuple' => [
-                ['(firstName, surname)' => '(Jon, Snow)', '(ageFrom,ageTo,size)' => '(18, 30, [DD; D])'],
+                ['(firstName, surname)' => '(Jon, Snow)', '(ageFrom,ageTo,size)' => '(18, 30, [A4; A5])'],
                 [
                     ['fullName', 'function', 'callable'],
                     ['firstName', 'function-parameter', 'Jon'],
                     ['surname', 'function-parameter', 'Snow'],
-                    ['perfectWife', 'function', 'callable'],
+                    ['perfectBook', 'function', 'callable'],
                     ['ageFrom', 'function-parameter', 18],
                     ['ageTo', 'function-parameter', 30],
-                    ['size', 'function-parameter', ['DD', 'D']],
+                    ['size', 'function-parameter', ['A4', 'A5']],
                 ],
             ],
             'multiple - implicit - values' => [
-                ['firstName' => 'Jon', 'surname' => 'Snow', 'ageFrom' => 18, 'ageTo' => 30, 'size' => ['DD', 'D']],
+                ['firstName' => 'Jon', 'surname' => 'Snow', 'ageFrom' => 18, 'ageTo' => 30, 'size' => ['A4', 'A5']],
                 [
                     ['fullName', 'function', 'callable'],
                     ['firstName', 'function-parameter', 'Jon'],
                     ['surname', 'function-parameter', 'Snow'],
-                    ['perfectWife', 'function', 'callable'],
+                    ['perfectBook', 'function', 'callable'],
                     ['ageFrom', 'function-parameter', 18],
                     ['ageTo', 'function-parameter', 30],
-                    ['size', 'function-parameter', ['DD', 'D']],
+                    ['size', 'function-parameter', ['A4', 'A5']],
                 ],
             ],
             'multiple - explicit - tuple' => [
                 [
                     '(fun,firstName, surname)' => '(fullName,Jon, Snow)',
-                    '(fun,ageFrom,ageTo,size)' => '(perfectWife,18,30,[DD;D])',
+                    '(fun,ageFrom,ageTo,size)' => '(perfectBook,18,30,[A4;A5])',
                 ],
                 [
                     ['fullName', 'function', 'callable'],
                     ['firstName', 'function-parameter', 'Jon'],
                     ['surname', 'function-parameter', 'Snow'],
-                    ['perfectWife', 'function', 'callable'],
+                    ['perfectBook', 'function', 'callable'],
                     ['ageFrom', 'function-parameter', 18],
                     ['ageTo', 'function-parameter', 30],
-                    ['size', 'function-parameter', ['DD', 'D']],
+                    ['size', 'function-parameter', ['A4', 'A5']],
                 ],
             ],
             'multiple - explicit - values' => [
                 [
-                    'fun' => ['fullName', 'perfectWife'],
-                    'size' => ['DD', 'D'],
+                    'fun' => ['fullName', 'perfectBook'],
+                    'size' => ['A4', 'A5'],
                     'firstName' => 'Jon',
                     'surname' => 'Snow',
                     'ageFrom' => 18,
@@ -325,10 +325,10 @@ class FunctionParserTest extends AbstractParserTestCase
                     ['fullName', 'function', 'callable'],
                     ['firstName', 'function-parameter', 'Jon'],
                     ['surname', 'function-parameter', 'Snow'],
-                    ['perfectWife', 'function', 'callable'],
+                    ['perfectBook', 'function', 'callable'],
                     ['ageFrom', 'function-parameter', 18],
                     ['ageTo', 'function-parameter', 30],
-                    ['size', 'function-parameter', ['DD', 'D']],
+                    ['size', 'function-parameter', ['A4', 'A5']],
                 ],
             ],
             'sql by single value' => [

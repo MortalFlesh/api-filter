@@ -47,6 +47,7 @@ class FunctionParser extends AbstractParser
     {
         foreach ($this->parsers as $parser) {
             if ($parser->supports($rawColumn, $rawValue)) {
+                var_dump(get_class($parser));
                 return true;
             }
         }

@@ -3,28 +3,29 @@
 namespace Lmc\ApiFilter\Service\Parser\FunctionParser;
 
 use Lmc\ApiFilter\Assertion;
+use Lmc\ApiFilter\Constant\Column;
 
 class ExplicitFunctionDefinitionInValueParser extends AbstractFunctionParser
 {
     /**
-     * @param string|array $rawValue Raw column value from query parameters
+     * @param string|array $rawValue Raw value from query parameters
      */
     public function supportsParameters(array $queryParameters, string $rawColumn, $rawValue): bool
     {
-        return array_key_exists(self::COLUMN_FUNCTION, $queryParameters);
+        return array_key_exists(Column::FUNCTION, $queryParameters);
     }
 
     /**
-     * @param string|array $rawValue Raw column value from query parameters
+     * @param string|array $rawValue Raw value from query parameters
      */
     public function parseParameters(array $queryParameters, string $rawColumn, $rawValue): iterable
     {
-        if ($this->isColumnParsed(self::COLUMN_FUNCTION)) {
+        if ($this->isColumnParsed(Column::FUNCTION)) {
             return;
         }
 
-        $this->markColumnAsParsed(self::COLUMN_FUNCTION);
-        $functionNames = $queryParameters[self::COLUMN_FUNCTION];
+        $this->markColumnAsParsed(Column::FUNCTION);
+        $functionNames = $queryParameters[Column::FUNCTION];
 
         Assertion::isArray(
             $functionNames,

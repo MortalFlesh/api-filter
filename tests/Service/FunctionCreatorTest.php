@@ -110,7 +110,7 @@ class FunctionCreatorTest extends AbstractTestCase
 
         $ageFrom = new FunctionParameter('ageFrom', new Value(18));
         $ageTo = new FunctionParameter('ageTo', new Value(30));
-        $size = new FunctionParameter('size', new Value(['DD', 'D']));
+        $size = new FunctionParameter('size', new Value(['A4', 'A5']));
         $this->filterApplicator->setFilters(Filters::from([$ageFrom, $ageTo, $size]));
 
         $functionWithImplicitFilters = $this->functionCreator->createByParameters(

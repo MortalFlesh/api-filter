@@ -134,10 +134,10 @@ class QueryParametersParserTest extends AbstractTestCase
                 ],
             ],
             'tuple - implicit eq + in' => [
-                ['(name,size)' => '(foo, [DD; D])'],
+                ['(name,size)' => '(foo, [A4; A5])'],
                 [
                     new FilterWithOperator('name', new Value('foo'), '=', 'eq'),
-                    new FilterIn('size', new Value(['DD', 'D'])),
+                    new FilterIn('size', new Value(['A4', 'A5'])),
                 ],
             ],
             'ints - between - explicit' => [
@@ -148,28 +148,28 @@ class QueryParametersParserTest extends AbstractTestCase
                 ],
             ],
             'explicit between + explicit in' => [
-                ['age' => ['gt' => 18, 'lt' => 30], 'size' => ['in' => ['DD', 'D']]],
+                ['age' => ['gt' => 18, 'lt' => 30], 'size' => ['in' => ['A4', 'A5']]],
                 [
                     new FilterWithOperator('age', new Value(18), '>', 'gt'),
                     new FilterWithOperator('age', new Value(30), '<', 'lt'),
-                    new FilterIn('size', new Value(['DD', 'D'])),
+                    new FilterIn('size', new Value(['A4', 'A5'])),
                 ],
             ],
             'tuple - explicit between + implicit in and eq in columns' => [
-                ['(age[gte], age[lt], size, name)' => '(18, 30, [DD; D], "Jon Snow")'],
+                ['(age[gte], age[lt], size, name)' => '(18, 30, [A4; A5], "Jon Snow")'],
                 [
                     new FilterWithOperator('age', new Value(18), '>=', 'gte'),
                     new FilterWithOperator('age', new Value(30), '<', 'lt'),
-                    new FilterIn('size', new Value(['DD', 'D'])),
+                    new FilterIn('size', new Value(['A4', 'A5'])),
                     new FilterWithOperator('name', new Value('Jon Snow'), '=', 'eq'),
                 ],
             ],
             'tuple - explicit between + implicit in and eq in columns + other implicit eq' => [
-                ['(age[gte], age[lt], size, name)' => '(18, 30, [DD; D], "Jon Snow")', 'version' => 'latest'],
+                ['(age[gte], age[lt], size, name)' => '(18, 30, [A4; A5], "Jon Snow")', 'version' => 'latest'],
                 [
                     new FilterWithOperator('age', new Value(18), '>=', 'gte'),
                     new FilterWithOperator('age', new Value(30), '<', 'lt'),
-                    new FilterIn('size', new Value(['DD', 'D'])),
+                    new FilterIn('size', new Value(['A4', 'A5'])),
                     new FilterWithOperator('name', new Value('Jon Snow'), '=', 'eq'),
                     new FilterWithOperator('version', new Value('latest'), '=', 'eq'),
                 ],
@@ -185,61 +185,61 @@ class QueryParametersParserTest extends AbstractTestCase
                     ['fullName', ['firstName', 'surname'], $this->createDummyCallback('fullName')],
                 ],
             ],
-            'function - perfectWife + spot + name' => [
-                ['perfectWife' => '(18, 30, [DD; D])', '(zone,bucket)' => '(all,common)', 'name' => 'Jon'],
+            'function - perfectBook + spot + name' => [
+                ['perfectBook' => '(18, 30, [A4; A5])', '(zone,bucket)' => '(all,common)', 'name' => 'Jon'],
                 [
-                    new FilterFunction('perfectWife', new Value($this->createDummyCallback('perfectWife'))),
+                    new FilterFunction('perfectBook', new Value($this->createDummyCallback('perfectBook'))),
                     new FunctionParameter('ageFrom', new Value(18)),
                     new FunctionParameter('ageTo', new Value(30)),
-                    new FunctionParameter('size', new Value(['DD', 'D'])),
+                    new FunctionParameter('size', new Value(['A4', 'A5'])),
                     new FilterFunction('spot', new Value($this->createDummyCallback('spot'))),
                     new FunctionParameter('zone', new Value('all')),
                     new FunctionParameter('bucket', new Value('common')),
                     new FilterWithOperator('name', new Value('Jon'), '=', 'eq'),
                 ],
                 [
-                    ['perfectWife', ['ageFrom', 'ageTo', 'size'], $this->createDummyCallback('perfectWife')],
+                    ['perfectBook', ['ageFrom', 'ageTo', 'size'], $this->createDummyCallback('perfectBook')],
                     ['spot', ['zone', 'bucket'], $this->createDummyCallback('spot')],
                 ],
             ],
-            'explicit - function - perfectWife + spot + name' => [
-                ['perfectWife' => '(18, 30, [DD; D])', '(fun,zone,bucket)' => '(spot,all,common)', 'name' => 'Jon'],
+            'explicit - function - perfectBook + spot + name' => [
+                ['perfectBook' => '(18, 30, [A4; A5])', '(fun,zone,bucket)' => '(spot,all,common)', 'name' => 'Jon'],
                 [
-                    new FilterFunction('perfectWife', new Value($this->createDummyCallback('perfectWife'))),
+                    new FilterFunction('perfectBook', new Value($this->createDummyCallback('perfectBook'))),
                     new FunctionParameter('ageFrom', new Value(18)),
                     new FunctionParameter('ageTo', new Value(30)),
-                    new FunctionParameter('size', new Value(['DD', 'D'])),
+                    new FunctionParameter('size', new Value(['A4', 'A5'])),
                     new FilterFunction('spot', new Value($this->createDummyCallback('spot'))),
                     new FunctionParameter('zone', new Value('all')),
                     new FunctionParameter('bucket', new Value('common')),
                     new FilterWithOperator('name', new Value('Jon'), '=', 'eq'),
                 ],
                 [
-                    ['perfectWife', ['ageFrom', 'ageTo', 'size'], $this->createDummyCallback('perfectWife')],
+                    ['perfectBook', ['ageFrom', 'ageTo', 'size'], $this->createDummyCallback('perfectBook')],
                     ['spot', ['zone', 'bucket'], $this->createDummyCallback('spot')],
                 ],
             ],
-            'implicit by values - function - perfectWife + spot + name' => [
+            'implicit by values - function - perfectBook + spot + name' => [
                 [
                     'ageFrom' => 18,
                     'ageTo' => 30,
                     'name' => 'Jon',
-                    'size' => ['DD', 'D'],
+                    'size' => ['A4', 'A5'],
                     'zone' => 'all',
                     'bucket' => 'common',
                 ],
                 [
-                    new FilterFunction('perfectWife', new Value($this->createDummyCallback('perfectWife'))),
+                    new FilterFunction('perfectBook', new Value($this->createDummyCallback('perfectBook'))),
                     new FunctionParameter('ageFrom', new Value(18)),
                     new FunctionParameter('ageTo', new Value(30)),
-                    new FunctionParameter('size', new Value(['DD', 'D'])),
+                    new FunctionParameter('size', new Value(['A4', 'A5'])),
                     new FilterFunction('spot', new Value($this->createDummyCallback('spot'))),
                     new FunctionParameter('zone', new Value('all')),
                     new FunctionParameter('bucket', new Value('common')),
                     new FilterWithOperator('name', new Value('Jon'), '=', 'eq'),
                 ],
                 [
-                    ['perfectWife', ['ageFrom', 'ageTo', 'size'], $this->createDummyCallback('perfectWife')],
+                    ['perfectBook', ['ageFrom', 'ageTo', 'size'], $this->createDummyCallback('perfectBook')],
                     ['spot', ['zone', 'bucket'], $this->createDummyCallback('spot')],
                 ],
             ],

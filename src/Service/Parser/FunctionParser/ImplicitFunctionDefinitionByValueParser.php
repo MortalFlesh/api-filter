@@ -19,7 +19,7 @@ class ImplicitFunctionDefinitionByValueParser extends AbstractFunctionParser
     }
 
     /**
-     * @param string|array $rawValue Raw column value from query parameters
+     * @param string|array $rawValue Raw value from query parameters
      */
     public function supportsParameters(array $queryParameters, string $rawColumn, $rawValue): bool
     {
@@ -40,7 +40,7 @@ class ImplicitFunctionDefinitionByValueParser extends AbstractFunctionParser
     }
 
     /**
-     * @param string|array $rawValue Raw column value from query parameters
+     * @param string|array $rawValue Raw value from query parameters
      */
     protected function parseParameters(array $queryParameters, string $rawColumn, $rawValue): iterable
     {

@@ -2,20 +2,21 @@
 
 namespace Lmc\ApiFilter\Service\Parser\FunctionParser;
 
+use Lmc\ApiFilter\Constant\Column;
 use MF\Collection\Immutable\Tuple;
 
 class ExplicitFunctionDefinitionByTupleParser extends AbstractFunctionParser
 {
     /**
-     * @param string|array $rawValue Raw column value from query parameters
+     * @param string|array $rawValue Raw value from query parameters
      */
     public function supportsParameters(array $queryParameters, string $rawColumn, $rawValue): bool
     {
-        return $this->isTuple($rawColumn) && Tuple::parse($rawColumn)->first() === self::COLUMN_FUNCTION;
+        return $this->isTuple($rawColumn) && Tuple::parse($rawColumn)->first() === Column::FUNCTION;
     }
 
     /**
-     * @param string|array $rawValue Raw column value from query parameters
+     * @param string|array $rawValue Raw value from query parameters
      */
     protected function parseParameters(array $queryParameters, string $rawColumn, $rawValue): iterable
     {
