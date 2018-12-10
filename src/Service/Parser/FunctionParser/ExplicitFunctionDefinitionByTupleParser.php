@@ -20,7 +20,7 @@ class ExplicitFunctionDefinitionByTupleParser extends AbstractFunctionParser
      */
     protected function parseParameters(array $queryParameters, string $rawColumn, $rawValue): iterable
     {
-        $rawValue = $this->assertTupleValue($rawValue);
+        $rawValue = $this->validateTupleValue($rawValue);
         $columns = Tuple::parse($rawColumn)->toArray();
         $values = Tuple::parse($rawValue, count($columns))->toArray();
 

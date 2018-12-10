@@ -9,7 +9,7 @@ class ImplicitFunctionDefinitionByTupleParser extends AbstractFunctionParser
     /**
      * @param string|array $rawValue Raw value from query parameters
      */
-    public function supportsParameters(array $queryParameters, string $rawColumn, $rawValue): bool
+    protected function supportsParameters(array $queryParameters, string $rawColumn, $rawValue): bool
     {
         if ($this->isTuple($rawColumn)) {
             $possiblyParameters = Tuple::parse($rawColumn)->toArray();
@@ -27,7 +27,7 @@ class ImplicitFunctionDefinitionByTupleParser extends AbstractFunctionParser
      */
     protected function parseParameters(array $queryParameters, string $rawColumn, $rawValue): iterable
     {
-        $rawValue = $this->assertTupleValue($rawValue);
+        $rawValue = $this->validateTupleValue($rawValue);
         $columns = Tuple::parse($rawColumn)->toArray();
         $values = Tuple::parse($rawValue, count($columns))->toArray();
 

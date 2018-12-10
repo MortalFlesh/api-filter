@@ -6,20 +6,20 @@ todo
 ## PR
 - pockat az se vyda code-fixer
 - pripravit male PR
-    - ~~code-style fix pred mergem (commenty u mixed)~~     [merged]
-    - ~~feature/update-dependencies~~                       [merged]
+    - code-style fix pred mergem (commenty u mixed)         [merged]
+    - feature/update-dependencies                           [merged]
         - php stan - assertion
-    - ~~forbid-nested-value-and-filterable~~                [merged]
-    - ~~feature/change-filter-title~~                       [merged -> `add-filter-factory`]
+    - forbid-nested-value-and-filterable                    [merged]
+    - feature/change-filter-title                           [merged -> `add-filter-factory`]
         - [a-zA-Z...] + fullTitle
-    - ~~feature/extend-enumerable-interface-by-filters-interface~~ [merged]
+    - feature/extend-enumerable-interface-by-filters-interface [merged]
         - add Filters::dump method for better testing
         - add IEnumerable
-    - ~~feature/add-apifilter-exception~~                   [merged]
-    - ~~feature/add-filter-factory~~                        [merged -> `parsery`]
+    - feature/add-apifilter-exception                       [merged]
+    - feature/add-filter-factory                            [merged -> `parsery`]
     
-    - ~~parsery~~                                           [merged]
-        - ~~prvni~~                                         [merged]
+    - parsery                                               [merged]
+        - prvni                                             [merged]
             - interface
             - abstract parser + test case
             - query parmeter parser + test?
@@ -45,24 +45,28 @@ todo
         - Functions
             - `register` + `get`                            [merged]
         - FunctionParser
-            - `Abstract` + base stuff                       [preparing - waiting for Functions]
-                - feature/add-base-function-parser
-            - `ExplicitFunctionDefinitionInValueParser`
+            - `Abstract` + base stuff                       [merged]
+            - `AbstractFunctionParser`                      [merged]
+            - `ExplicitFunctionDefinitionInValueParser`     [merged]
                 + `AbstractFunctionParser::markColumnAsParsed()`
                 + `Functions::getParametersFor()` + test
-                + `FunctionParserTest::shouldNotCallOneFunctionTwiceByDifferentDefinitions()`
                 + `FunctionParserTest::shouldNotParseFunctionByExplicitValueDefinition()`
-            - `ExplicitFunctionDefinitionParser`
+            - `ExplicitFunctionDefinitionParser`            [merged]
                 + `FunctionParserTest::shouldNotParseFunctionDefinedBadly()`
                 + `FunctionParserTest::shouldNotCallOneFunctionTwice()`
-            - `ImplicitFunctionDefinitionByValueParser`
+            - `ImplicitFunctionDefinitionByValueParser`     [PR]
                 + `Functions::getFunctionNamesByParameter()` + test
             - `ExplicitFunctionDefinitionByTupleParser`
-                + `AbstractFunctionParser::assertTupleValue()`
+                + `AbstractFunctionParser::validateTupleValue()`
+                + `FunctionParserTest::shouldNotCallOneFunctionTwiceByDifferentDefinitions()`
             - `ImplicitFunctionDefinitionByTupleParser`
                 + `Functions::getFunctionNamesByAllParameters()` + test
             - `FunctionInFilterParameterParser`
-            - update QueryParameterParserTest
+            - rename `ExplicitFunctionDefinitionInValueParser` -> `ExplicitFunctionDefinitionByValueParser`
+            - update
+                - QueryParameterParserTest
+                - ApiFilterTest
+                - Readme
         - applicator
             + `Functions::getParameterDefinitionsFor()` + test
     

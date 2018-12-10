@@ -107,7 +107,7 @@ abstract class AbstractFunctionParser extends AbstractParser implements Function
     /**
      * @param string|array $rawValue Raw value from query parameters
      */
-    protected function assertTupleValue($rawValue, string $errorMessage = null): string
+    protected function validateTupleValue($rawValue, string $errorMessage = null): string
     {
         Assertion::true(
             $this->isTuple($rawValue) && !is_array($rawValue),
