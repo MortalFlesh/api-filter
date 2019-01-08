@@ -54,15 +54,16 @@ todo
             - `ExplicitFunctionDefinitionParser`            [merged]
                 + `FunctionParserTest::shouldNotParseFunctionDefinedBadly()`
                 + `FunctionParserTest::shouldNotCallOneFunctionTwice()`
-            - `ImplicitFunctionDefinitionByValueParser`     [PR]
+            - `ImplicitFunctionDefinitionByValueParser`     [merged]
                 + `Functions::getFunctionNamesByParameter()` + test
-            - `ExplicitFunctionDefinitionByTupleParser`
+            - `ExplicitFunctionDefinitionByTupleParser`     [merged]
                 + `AbstractFunctionParser::validateTupleValue()`
                 + `FunctionParserTest::shouldNotCallOneFunctionTwiceByDifferentDefinitions()`
-            - `ImplicitFunctionDefinitionByTupleParser`
+            - `ImplicitFunctionDefinitionByTupleParser`     [merged]
                 + `Functions::getFunctionNamesByAllParameters()` + test
+            - rename `ExplicitFunctionDefinitionInValueParser` -> `ExplicitFunctionDefinitionByValueParser` [PR]
+            - code-style fix po mergi (odebrat zbytecne commenty u mixed) [PR]
             - `FunctionInFilterParameterParser`
-            - rename `ExplicitFunctionDefinitionInValueParser` -> `ExplicitFunctionDefinitionByValueParser`
             - update
                 - QueryParameterParserTest
                 - ApiFilterTest
@@ -86,5 +87,3 @@ todo
     
     - pridat moznost i z `?filter[]=(spot,common,all)`      [todo]
         - povolit i `?filter=(single,filter,only)` ?
-
-    - code-style fix po mergi (odebrat zbytecne commenty u mixed)

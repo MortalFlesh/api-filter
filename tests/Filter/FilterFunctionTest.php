@@ -24,7 +24,7 @@ class FilterFunctionTest extends AbstractTestCase
     {
         $filterFunction = new FilterFunction(
             'fooFunction',
-            new Value(function () {
+            new Value(functionction () {
                 return 'fooBar';
             }),
             'foo'

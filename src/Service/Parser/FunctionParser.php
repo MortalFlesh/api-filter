@@ -6,7 +6,7 @@ use Lmc\ApiFilter\Constant\Priority;
 use Lmc\ApiFilter\Service\FilterFactory;
 use Lmc\ApiFilter\Service\Functions;
 use Lmc\ApiFilter\Service\Parser\FunctionParser\ExplicitFunctionDefinitionByTupleParser;
-use Lmc\ApiFilter\Service\Parser\FunctionParser\ExplicitFunctionDefinitionInValueParser;
+use Lmc\ApiFilter\Service\Parser\FunctionParser\ExplicitFunctionDefinitionByValueParser;
 use Lmc\ApiFilter\Service\Parser\FunctionParser\ExplicitFunctionDefinitionParser;
 use Lmc\ApiFilter\Service\Parser\FunctionParser\FunctionInFilterParameterParser;
 use Lmc\ApiFilter\Service\Parser\FunctionParser\FunctionParserInterface;
@@ -26,7 +26,7 @@ class FunctionParser extends AbstractParser
 
         $this->parsers = new PrioritizedCollection(FunctionParserInterface::class);
         $this->parsers->add(new FunctionInFilterParameterParser($filterFactory, $functions), Priority::HIGHEST);
-        $this->parsers->add(new ExplicitFunctionDefinitionInValueParser($filterFactory, $functions), Priority::HIGHER);
+        $this->parsers->add(new ExplicitFunctionDefinitionByValueParser($filterFactory, $functions), Priority::HIGHER);
         $this->parsers->add(new ExplicitFunctionDefinitionParser($filterFactory, $functions), Priority::HIGH);
         $this->parsers->add(new ImplicitFunctionDefinitionByValueParser($filterFactory, $functions), Priority::MEDIUM);
         $this->parsers->add(new ExplicitFunctionDefinitionByTupleParser($filterFactory, $functions), Priority::LOW);

@@ -172,9 +172,9 @@ class ApiFilterRegisterFunctionTest extends AbstractTestCase
             ],
             'explicit - tuples' => [
                 [
-                    '(fun,ageFrom,ageTo,size)' => '(perfectBook, 18, 30, [A4; A5])',
+                    '(function,ageFrom,ageTo,size)' => '(perfectBook, 18, 30, [A4; A5])',
                     'firstName' => 'Foo',
-                    '(fun,zone,bucket)' => '(spot, all, common)',
+                    '(function,zone,bucket)' => '(spot, all, common)',
                 ],
             ],
             'implicit - values' => [
@@ -226,7 +226,7 @@ class ApiFilterRegisterFunctionTest extends AbstractTestCase
             'function' => [['fullName' => '(Jon,Snow)']],
             'implicit - tuple' => [['(firstName,surname)' => '(Jon,Snow)']],
             'implicit - single values' => [['firstName' => 'Jon', 'surname' => 'Snow']],
-            'explicit - tuple' => [['(fun,firstName,surname)' => '(fullName,Jon,Snow)']],
+            'explicit - tuple' => [['(function,firstName,surname)' => '(fullName,Jon,Snow)']],
             'explicit - single values' => [['fun' => ['fullName'], 'firstName' => 'Jon', 'surname' => 'Snow']],
         ];
     }
@@ -261,7 +261,7 @@ class ApiFilterRegisterFunctionTest extends AbstractTestCase
         return [
             // queryParameters
             'implicit - single value' => [['sql' => 'SELECT * FROM table']],
-            'explicit - tuple' => [['(fun,query)' => '(sql, "SELECT * FROM table")']],
+            'explicit - tuple' => [['(function,query)' => '(sql, "SELECT * FROM table")']],
             'implicit - single values' => [['query' => 'SELECT * FROM table']],
             'explicit - single values' => [['fun' => ['sql'], 'query' => 'SELECT * FROM table']],
         ];

@@ -203,7 +203,7 @@ class QueryParametersParserTest extends AbstractTestCase
                 ],
             ],
             'explicit - function - perfectBook + spot + name' => [
-                ['perfectBook' => '(18, 30, [A4; A5])', '(fun,zone,bucket)' => '(spot,all,common)', 'name' => 'Jon'],
+                ['perfectBook' => '(18, 30, [A4; A5])', '(function,zone,bucket)' => '(spot,all,common)', 'name' => 'Jon'],
                 [
                     new FilterFunction('perfectBook', new Value($this->createDummyCallback('perfectBook'))),
                     new FunctionParameter('ageFrom', new Value(18)),

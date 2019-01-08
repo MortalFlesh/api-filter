@@ -56,7 +56,7 @@ abstract class AbstractTestCase extends TestCase
     {
         $filterFactory = m::mock(FilterFactory::class);
         $filterFactory->shouldReceive('createFilter')
-            ->andReturnUsing(function (string $column, string $filter, Value $value) {
+            ->andReturnUsing(functionction (string $column, string $filter, Value $value) {
                 return new SimpleFilter($column, $filter, $value->getValue());
             });
 

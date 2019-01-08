@@ -60,7 +60,7 @@ class SimpleArrayApplicator implements ApplicatorInterface
      * @example
      * $filter = new FilterFunction(
      *      'fullName',
-     *      new Value(function ($filterable, FunctionParameter $firstName, FunctionParameter $surname) {
+     *      new Value(functionction ($filterable, FunctionParameter $firstName, FunctionParameter $surname) {
      *          $filterable = $simpleSqlApplicator->applyFilterWithOperator(
      *              new FilterWithOperator($firstName->getColumn(), $firstName->getValue(), '=', $firstName->getTitle()),
      *              $filterable
