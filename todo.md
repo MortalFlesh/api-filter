@@ -61,18 +61,17 @@ todo
                 + `FunctionParserTest::shouldNotCallOneFunctionTwiceByDifferentDefinitions()`
             - `ImplicitFunctionDefinitionByTupleParser`     [merged]
                 + `Functions::getFunctionNamesByAllParameters()` + test
-            - rename `ExplicitFunctionDefinitionInValueParser` -> `ExplicitFunctionDefinitionByValueParser` [PR]
-            - code-style fix po mergi (odebrat zbytecne commenty u mixed) [PR]
-            - `FunctionInFilterParameterParser`
+            - rename `ExplicitFunctionDefinitionInValueParser` -> `ExplicitFunctionDefinitionByValueParser` [merged]
+            - code-style fix po mergi (odebrat zbytecne commenty u mixed) [merged]
+            - `FunctionInFilterParameterParser`             [merged]
             - update
-                - QueryParameterParserTest
-                - ApiFilterTest
-                - Readme
+                - QueryParameterParserTest (asi uz je ...)  [PR]
         - applicator
             + `Functions::getParameterDefinitionsFor()` + test
-    
+
     - REGISTER FUNCTION
-        - readme
+        - ApiFilterTest
+        - Readme
         - register function
         - Functions
     

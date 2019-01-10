@@ -18,6 +18,10 @@ class FunctionInFilterParameterParser extends AbstractFunctionParser
      */
     protected function parseParameters(array $queryParameters, string $rawColumn, $rawValue): iterable
     {
+        if ($this->isColumnParsed(Column::FILTER)) {
+            return;
+        }
+
         $filterValue = $queryParameters[Column::FILTER];
         Assertion::true(
             is_array($filterValue) || $this->isTuple($filterValue),
