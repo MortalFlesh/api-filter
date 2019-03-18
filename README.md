@@ -395,9 +395,10 @@ Result:
 ## Functions in filters
 With function you can handle all kinds of problems, which might be problematic with just a simple filters like `eq`, etc.
 
+### Example for `fullName` function
 Let's see how to work with functions and what is required to do. We will show it right on the example.
 
-### Expected api
+#### Expected api
 ```http request
 GET http://host/endpoint?fullName=(Jon,Snow)
 ```
@@ -413,7 +414,7 @@ type Person = {
 }
 ```
 
-### Initialization
+#### Initialization
 First of all, you have to define functions you want to use.
 ```php
 // in DI container/factory
@@ -430,7 +431,7 @@ $apiFilter->declareFunction(
 Method `declareFunction` will create a function with filters based on parameters.  
 _There is also `registerFunction` method, which allows you to pass any function you want. This may be useful when you dont need filter functionality at all or have some custom storage, etc._
 
-### Parsing and applying filters
+#### Parsing and applying filters
 Now when request with `?fullName=(Jon,Snow)` come, `ApiFilter` can parse it to:
 ```php
 // in service/controller/...
@@ -472,6 +473,54 @@ $preparedValues = $apiFilter->getPreparedValues($filters, $sql);
 //      'lastname_function_parameter' => 'Snow',
 // ]
 ```
+
+#### Supported function usage
+All examples below results the same. We have that many options, so we can allow as many different consumers as possible.
+
+```http request
+### Explicit function call
+GET http://host/endpoint?fullName=(Jon,Snow)
+
+### Explicit function call with values 
+GET http://host/endpoint?function=fullName&firstName=Jon&lastname=Snow
+
+### Implicit function call by values
+GET http://host/endpoint?firstName=Jon&lastname=Snow
+
+### Explicit function call by tuple 
+GET http://host/endpoint?(function,firstName,surname)=(fullName, Jon, Snow)
+
+### Implicit function call by tuple
+GET http://host/endpoint?(firstName,surname)=(Jon, Snow)
+
+### Explicit function call by filter parameter 
+GET http://host/endpoint?filter[]=(fullName,Jon,Snow)
+```
+
+### Function Parameters Definition
+To `declare` or `register` function, you have to define its parameters. There are many ways/needs to do it.
+
+#### Defined as string
+This is the easiest way to do it. You just define a name.
+
+**It means:**
+- you want `eq` filter (_or `IN` for array_) and the column name and parameter name are the same
+- the value for this parameter is mandatory
+
+```php
+$apiFilter->declareFunction('fullName', ['firstName', 'surname']);
+```
+
+#### Defined as array
+This allows you to pass more options for a paramater.
+
+##### Only one item
+If you declare it just by giving the only item, it is the same as definition by string above.
+```php
+$apiFilter->declareFunction('fullName', [['firstName'], ['surname']]);
+```
+
+
 
 ## Exceptions and error handling
 
