@@ -31,6 +31,10 @@ Same if you want different settings per entity/table, it should be done by a spe
 - [Functions in filters](#functions-in-filters)
     - [Example for fullName function](#example-for-fullname-function)
     - [Function parameters definition](#function-parameters-definition)
+        - [By string](#defined-as-string)
+        - [By array](#defined-as-array)
+        - [By object](#defined-as-object)
+        - [Combinations](#combinations)
 - [Exceptions and error handling](#exceptions-and-error-handling)
 - [Development](#development)
 
