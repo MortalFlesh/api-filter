@@ -28,6 +28,7 @@ Same if you want different settings per entity/table, it should be done by a spe
     - [IN + EQ](#in--eq-filter)
     - [GT + LT _(between)_](#gt--lt-filter-between)
     - [EQ `Tuple`](#eq-with-tuple)
+- [Functions in filters](#functions-in-filters)
 - [Exceptions and error handling](#exceptions-and-error-handling)
 - [Development](#development)
 
@@ -170,6 +171,12 @@ GET http://host/endpoint/?field[lte]=value
 GET http://host/endpoint/?type[in][]=one&type[in][]=two
 ```
 - `Tuples` are not allowed in `IN` filter
+
+### Function
+```http request
+GET http://host/endpoint?fullName=(Jon,Snow)
+```
+- there is much more options and possibilities with `functions` which you can see [here](#functions-in-filters)
 
 ## `Tuples` in filters
 `Tuples`
@@ -383,6 +390,87 @@ Result:
 -   column: genre
     filters: in
     value: [ action, fantasy ]
+```
+
+## Functions in filters
+With function you can handle all kinds of problems, which might be problematic with just a simple filters like `eq`, etc.
+
+Let's see how to work with functions and what is required to do. We will show it right on the example.
+
+### Expected api
+```http request
+GET http://host/endpoint?fullName=(Jon,Snow)
+```
+☝️ example above shows what we want to offer to our consumers. It's easy and explicit enough.
+
+It may even hide some inner differences, for example with simple filters, database column must have same name as field in filter, but with function, we can change it.
+
+Let's say that in database we have something like:
+```fs
+type Person = {
+    first_name: string
+    lastname: string
+}
+```
+
+### Initialization
+First of all, you have to define functions you want to use.
+```php
+// in DI container/factory
+$apiFilter = new ApiFilter();
+
+$apiFilter->declareFunction(
+    'fullName',
+    [
+        new ParameterDefinition('firstName', 'eq', 'first_name'),   // parameter name and field name are different, so we need to define it
+        'lastname`,              // parameter name and field name are the same and we use the implicit `eq` filter, so it is defined simply 
+    ]
+);
+```
+Method `declareFunction` will create a function with filters based on parameters.  
+_There is also `registerFunction` method, which allows you to pass any function you want. This may be useful when you dont need filter functionality at all or have some custom storage, etc._
+
+### Parsing and applying filters
+Now when request with `?fullName=(Jon,Snow)` come, `ApiFilter` can parse it to:
+```php
+// in service/controller/...
+$sql = 'SELECT * FROM person';
+
+$filters = $apiFilter->parseFilters($request->query->all());
+// [
+//      0 => Lmc\ApiFilter\Filter\FilterFunction {
+//        private $title  => 'function'
+//        private $column => 'fullName'
+//        private $value  => Lmc\ApiFilter\Entity\Value {
+//          private $value => Closure
+//        }
+//      },
+//
+//      1 => Lmc\ApiFilter\Filter\FunctionParameter {
+//        private $title => 'function_parameter'
+//        private $column => 'firstName'
+//        private $value => Lmc\ApiFilter\Entity\Value {
+//          private $value => 'Jon'
+//        }
+//      },
+//
+//      2 => Lmc\ApiFilter\Filter\FunctionParameter {
+//        private $title => 'function_parameter'
+//        private $column => 'lastname'
+//        private $value => Lmc\ApiFilter\Entity\Value {
+//          private $value => 'Snow'
+//        }
+//      }
+// ]
+
+$appliedSql = $apiFilter->applyFilters($filters, $sql);
+// SELECT * FROM person WHERE first_name = :firstName_function_parameter AND lastname = :lastname_function_parameter
+
+$preparedValues = $apiFilter->getPreparedValues($filters, $sql);
+// [
+//      'firstName_function_parameter' => 'Jon',
+//      'lastname_function_parameter' => 'Snow',
+// ]
 ```
 
 ## Exceptions and error handling
