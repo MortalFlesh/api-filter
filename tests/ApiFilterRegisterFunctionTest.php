@@ -100,6 +100,17 @@ class ApiFilterRegisterFunctionTest extends AbstractTestCase
                 ['t.age > :ageFrom_fun', 't.age < :ageTo_fun', 't.gender = :gender_fun'],
                 ['ageFrom_fun' => 18, 'ageTo_fun' => 30, 'gender_fun' => 'female'],
             ],
+            'explicit with defaults - combined all possible declarations - and use default value' => [
+                'girlInAge',
+                [
+                    ['ageFrom', 'gt', 'age'],
+                    new ParameterDefinition('ageTo', 'lt', 'age'),
+                    ParameterDefinition::equalToDefaultValue('gender', new Value('female')),
+                ],
+                ['girlInAge' => '(18,30)'],
+                ['t.age > :ageFrom_fun', 't.age < :ageTo_fun', 't.gender = :gender_fun'],
+                ['ageFrom_fun' => 18, 'ageTo_fun' => 30, 'gender_fun' => 'female'],
+            ],
         ];
     }
 

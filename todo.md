@@ -65,9 +65,9 @@ todo
             - code-style fix po mergi (odebrat zbytecne commenty u mixed) [merged]
             - `FunctionInFilterParameterParser`             [merged]
             - update
-                - QueryParameterParserTest (asi uz je ...)  [PR]
+                - QueryParameterParserTest (asi uz je ...)  [merged]
         - applicator
-            + `Functions::getParameterDefinitionsFor()` + test
+            + `Functions::getParameterDefinitionsFor()` + test [PR]
 
     - REGISTER FUNCTION
         - ApiFilterTest
@@ -84,5 +84,5 @@ todo
         + `Functions::execute` + test
     - apply function
     
-    - pridat moznost i z `?filter[]=(spot,common,all)`      [todo]
+    - pridat moznost i z `?filter[]=(spot,common,all)`      [tohle by melo byt hotove]
         - povolit i `?filter=(single,filter,only)` ?

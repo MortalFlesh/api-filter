@@ -77,7 +77,7 @@ class SqlApplicatorTest extends AbstractTestCase
 
         $filter = new FilterFunction(
             'fullName',
-            new Value(functionction ($filterable, FunctionParameter $firstName, FunctionParameter $surname) {
+            new Value(function ($filterable, FunctionParameter $firstName, FunctionParameter $surname) {
                 $filterable = new Filterable($filterable);
                 $filterable = $this->sqlApplicator->applyFilterWithOperator(
                     new FilterWithOperator($firstName->getColumn(), $firstName->getValue(), '=', 'fun'),
