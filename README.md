@@ -29,6 +29,8 @@ Same if you want different settings per entity/table, it should be done by a spe
     - [GT + LT _(between)_](#gt--lt-filter-between)
     - [EQ `Tuple`](#eq-with-tuple)
 - [Functions in filters](#functions-in-filters)
+    - [Example for fullName function](#example-for-fullname-function)
+    - [Function parameters definition](#function-parameters-definition)
 - [Exceptions and error handling](#exceptions-and-error-handling)
 - [Development](#development)
 
@@ -503,7 +505,7 @@ To `declare` or `register` function, you have to define its parameters. There ar
 #### Defined as string
 This is the easiest way to do it. You just define a name.
 
-**It means:**
+It means:
 - you want `eq` filter (_or `IN` for array_) and the column name and parameter name are the same
 - the value for this parameter is mandatory
 
@@ -520,7 +522,43 @@ If you declare it just by giving the only item, it is the same as definition by 
 $apiFilter->declareFunction('fullName', [['firstName'], ['surname']]);
 ```
 
+##### More than one item
+It means
+- `firstName` parameter uses `eq` filter, has `first_name` column in storage and is mandatory
+- `surname` parameter uses `eq` filter, has `lastname` column in storage and its value is `Snow` (_which will always be used and no value can override it_)
+```php
+$apiFilter->declareFunction('fullName', [
+    ['firstName', 'eq', 'first_name'],
+    ['surname', 'eq', 'lastname', 'Snow']
+]);
+```
 
+#### Defined as object
+This allows you to pass same options as with the array, but explicitly defined object. (_It even has some special constructor methods to simplify creation_)
+```php
+$apiFilter->declareFunction('fullName', [
+    new ParameterDefinition('firstName', 'eq', 'first_name'),
+    new ParameterDefinition('surname', 'eq', 'lastname, new Value('Snow'))
+]);
+``` 
+
+#### Combinations
+All options can be combined to best suite the parameter
+
+##### Declaration
+```php
+$apiFilter->declareFunction('fullNameGrownMan', [
+    ['firstName', 'eq', 'first_name'],
+    'surname',
+    ['age', 'gte', 'age', 18],
+    ParameterDefinition::equalToDefaultValue('gender', new Value('male')),
+]);
+```
+
+##### Usage
+```http request
+GET http://endpoint/host?fullNameGrownMan=(Jon,Snow)
+```
 
 ## Exceptions and error handling
 
